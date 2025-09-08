@@ -43,6 +43,9 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
 
   // Obtener indicadores del cache
   const getCachedIndicators = (): CachedIndicators | null => {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') return null;
+    
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (!cached) return null;
@@ -58,13 +61,18 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
       return parsed;
     } catch (error) {
       console.warn('Error reading indicators cache:', error);
-      localStorage.removeItem(CACHE_KEY);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(CACHE_KEY);
+      }
       return null;
     }
   };
 
   // Guardar indicadores en cache
   const setCachedIndicators = (data: IndicatorData[]) => {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') return;
+    
     try {
       const cacheData: CachedIndicators = {
         data,
@@ -154,6 +162,9 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
 
   // Verificar si necesita actualización
   const needsUpdate = useCallback((): boolean => {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') return true;
+    
     const lastUpdateTime = localStorage.getItem(LAST_UPDATE_KEY);
     if (!lastUpdateTime) return true;
 
@@ -199,11 +210,11 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
 
   // Auto-refresh en background
   useEffect(() => {
-    if (!backgroundRefresh) return;
+    if (!backgroundRefresh || typeof window === 'undefined') return;
 
     const backgroundRefreshInterval = setInterval(async () => {
       // Solo actualizar si la página está visible
-      if (document.visibilityState === 'visible' && !loading) {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible' && !loading) {
         try {
           console.log('🔄 Auto-refresh en background...');
           await fetchIndicators({ silent: true });
@@ -218,6 +229,8 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
 
   // Limpiar cache cuando se cierra la ventana
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleBeforeUnload = () => {
       // Mantener cache para la próxima sesión
       console.log('💾 Preservando cache de indicadores para próxima sesión');
@@ -229,6 +242,8 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
 
   // Trigger update cuando la ventana vuelve a tener foco
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && needsUpdate()) {
         console.log('👁️ Página visible - verificando actualizaciones...');
