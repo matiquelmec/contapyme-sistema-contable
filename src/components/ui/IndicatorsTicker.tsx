@@ -83,6 +83,9 @@ export default function IndicatorsTicker() {
     autoRefreshInterval: 5 // 5 minutos
   })
   const [indicators, setIndicators] = useState<Indicator[]>([])
+  
+  // Estado del cache para mostrar indicadores visuales
+  const cacheStatus = lastUpdate ? 'hit' : 'live'
 
   // Convertir indicadores del sistema inteligente al formato del ticker
   useEffect(() => {

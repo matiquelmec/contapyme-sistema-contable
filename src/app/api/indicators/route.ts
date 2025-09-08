@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ 
-      indicators: data,
+      success: true,
+      data: data,
       last_updated: new Date().toISOString()
     });
   } catch (error) {
