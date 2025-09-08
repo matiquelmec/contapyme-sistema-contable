@@ -5,7 +5,7 @@ import { Header } from '@/components/layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { IndicatorValue, IndicatorsDashboard } from '@/types';
 import { useSmartIndicators } from '@/hooks/useSmartIndicators';
-import { RefreshCw, TrendingUp, DollarSign, Zap, Users, Info, Calendar } from 'lucide-react';
+import { RefreshCw, TrendingUp, DollarSign, Zap, Users, Info, Calendar, Clock, Database, ArrowUp, ArrowDown, Minus, BadgeCheck } from 'lucide-react';
 import CacheStatus from '@/components/indicators/CacheStatus';
 
 export default function EconomicIndicatorsPage() {
@@ -103,10 +103,10 @@ export default function EconomicIndicatorsPage() {
   };
 
   const formatValue = (indicator: IndicatorValue): string => {
-    const { value, format_type, decimal_places, unit } = indicator;
+    const { value, format_type, decimal_places, unit, category } = indicator;
     
     if (format_type === 'currency') {
-      if (unit === 'USD') {
+      if (unit === 'USD' || category === 'crypto') {
         return `$${value.toLocaleString('en-US', { 
           minimumFractionDigits: decimal_places || 0,
           maximumFractionDigits: decimal_places || 0
@@ -115,15 +115,26 @@ export default function EconomicIndicatorsPage() {
         return `$${value.toLocaleString('es-CL', { 
           minimumFractionDigits: decimal_places || 0,
           maximumFractionDigits: decimal_places || 0
-        })}`;
+        })} CLP`;
       }
     } else if (format_type === 'percentage') {
       return `${value.toFixed(decimal_places || 2)}%`;
     } else {
-      return value.toLocaleString('es-CL', { 
-        minimumFractionDigits: decimal_places || 0,
-        maximumFractionDigits: decimal_places || 0
-      });
+      // Para casos donde no hay format_type específico, inferir por categoría
+      if (category === 'monetary' || category === 'currency') {
+        if (unit === 'USD' || indicator.code === 'bitcoin') {
+          return `$${value.toLocaleString('en-US')} USD`;
+        } else {
+          return `$${value.toLocaleString('es-CL')} CLP`;
+        }
+      } else if (indicator.code === 'tpm' || unit === '%') {
+        return `${value.toFixed(decimal_places || 2)}%`;
+      } else {
+        return value.toLocaleString('es-CL', { 
+          minimumFractionDigits: decimal_places || 0,
+          maximumFractionDigits: decimal_places || 0
+        });
+      }
     }
   };
 
@@ -134,6 +145,84 @@ export default function EconomicIndicatorsPage() {
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  const getIndicatorContext = (indicator: IndicatorValue): string => {
+    const code = indicator.code.toLowerCase();
+    
+    switch (code) {
+      case 'uf':
+        return 'Valor en pesos chilenos (CLP) de una UF. Se usa para contratos, arriendos e inversiones.';
+      case 'utm':
+        return 'Valor en pesos chilenos (CLP) de una UTM. Se usa para multas y trámites legales.';
+      case 'dolar':
+      case 'usd':
+        return 'Cuántos pesos chilenos (CLP) vale un dólar estadounidense (USD).';
+      case 'euro':
+      case 'eur':
+        return 'Cuántos pesos chilenos (CLP) vale un euro europeo (EUR).';
+      case 'bitcoin':
+      case 'btc':
+        return 'Valor en dólares estadounidenses (USD) de un Bitcoin. Criptomoneda internacional.';
+      case 'ethereum':
+      case 'eth':
+        return 'Valor en dólares estadounidenses (USD) de un Ethereum. Criptomoneda internacional.';
+      case 'tpm':
+        return 'Tasa de Política Monetaria del Banco Central. Expresada como porcentaje (%) anual.';
+      case 'ipc':
+        return 'Índice de Precios al Consumidor. Variación expresada como porcentaje (%).';
+      case 'sueldo_minimo':
+        return 'Sueldo mínimo mensual en pesos chilenos (CLP) establecido por ley.';
+      case 'tasa_desempleo':
+        return 'Porcentaje (%) de desempleo nacional según estadísticas oficiales.';
+      default:
+        return indicator.category === 'monetary' ? 'Valor en pesos chilenos (CLP).' :
+               indicator.category === 'currency' ? 'Tipo de cambio en pesos chilenos (CLP).' :
+               indicator.category === 'crypto' ? 'Valor en dólares estadounidenses (USD).' :
+               'Indicador económico oficial.';
+    }
+  };
+
+  const getCurrencyBadge = (indicator: IndicatorValue) => {
+    const code = indicator.code.toLowerCase();
+    
+    // Determinar el tipo de moneda/unidad
+    if (code === 'tpm' || indicator.unit === '%' || indicator.format_type === 'percentage') {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+          <Minus className="w-3 h-3 mr-1" />
+          Porcentaje
+        </span>
+      );
+    } else if (code === 'bitcoin' || code === 'ethereum' || indicator.category === 'crypto') {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+          <Zap className="w-3 h-3 mr-1" />
+          USD
+        </span>
+      );
+    } else if (indicator.category === 'currency' && (code === 'dolar' || code === 'euro')) {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+          <TrendingUp className="w-3 h-3 mr-1" />
+          CLP por unidad
+        </span>
+      );
+    } else if (indicator.category === 'monetary' || code === 'uf' || code === 'utm' || code === 'sueldo_minimo') {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+          <DollarSign className="w-3 h-3 mr-1" />
+          CLP
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+          <Database className="w-3 h-3 mr-1" />
+          Valor
+        </span>
+      );
+    }
   };
 
   const getCategoryConfig = (category: string) => {
@@ -212,7 +301,12 @@ export default function EconomicIndicatorsPage() {
                 onClick={() => setSelectedIndicator(selectedIndicator === indicator.code ? null : indicator.code)}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-gray-900 text-sm leading-tight">{indicator.name}</h4>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{indicator.name}</h4>
+                    <div className="flex items-center space-x-1">
+                      {getCurrencyBadge(indicator)}
+                    </div>
+                  </div>
                   <button className="text-gray-400 hover:text-gray-600 flex-shrink-0 ml-2">
                     <Info className="w-4 h-4" />
                   </button>
@@ -239,10 +333,13 @@ export default function EconomicIndicatorsPage() {
                 </div>
                 
                 {selectedIndicator === indicator.code && (
-                  <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
                     <p className="text-xs text-gray-600 leading-relaxed">
                       {indicator.description || `Valor actualizado automáticamente desde fuentes oficiales.`}
                     </p>
+                    <div className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1">
+                      <strong>Contexto:</strong> {getIndicatorContext(indicator)}
+                    </div>
                   </div>
                 )}
               </div>
@@ -326,19 +423,36 @@ export default function EconomicIndicatorsPage() {
           onForceRefresh={manualRefresh}
         />
 
-        {/* Hero Section */}
+        {/* Enhanced Hero Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-blue-100 text-green-800 rounded-full text-sm font-medium mb-6">
-            <span className="mr-2">💰</span>
+            <BadgeCheck className="w-4 h-4 mr-2" />
             Fuentes Oficiales • Actualización Automática • Precisión Garantizada
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-            Indicadores económicos
-            <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"> en tiempo real</span>
+            Indicadores Económicos Chilenos
+            <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"> en Tiempo Real</span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Mantente informado con los valores más actualizados de UF, UTM, tipos de cambio y más indicadores clave para tu negocio.
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
+            Mantente informado con los valores más actualizados de UF, UTM, tipos de cambio y criptomonedas. 
+            Todos los valores incluyen detalles específicos sobre su moneda de referencia.
           </p>
+          
+          {/* Currency Legend */}
+          <div className="flex flex-wrap justify-center gap-3 text-sm">
+            <div className="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
+              <DollarSign className="w-4 h-4 mr-1" />
+              <span className="font-medium">CLP</span> = Pesos Chilenos
+            </div>
+            <div className="inline-flex items-center px-3 py-2 bg-green-50 text-green-700 rounded-lg border border-green-200">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span className="font-medium">USD</span> = Dólares Estadounidenses
+            </div>
+            <div className="inline-flex items-center px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-200">
+              <Zap className="w-4 h-4 mr-1" />
+              <span className="font-medium">%</span> = Porcentaje
+            </div>
+          </div>
         </div>
 
         {/* Status Card */}
