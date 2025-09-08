@@ -62,11 +62,28 @@ function getShortName(name: string): string {
   return shortNames[name] || name
 }
 
-// Obtener unidad de visualización
-function getDisplayUnit(unit: string, formatType: string): string {
-  if (formatType === 'percentage') return '%'
-  if (unit === 'USD') return 'US$'
-  if (unit === 'CLP') return '$'
+// Obtener unidad de visualización correcta según el tipo de indicador
+function getDisplayUnit(unit: string, category: string): string {
+  // Para indicadores monetarios chilenos (UF, UTM) - valor en pesos
+  if ((unit === 'CLP' || unit === 'pesos') && category === 'monetary') {
+    return '$'
+  }
+  
+  // Para divisas cotizadas en Chile (USD, EUR en pesos chilenos)
+  if (category === 'currency' && unit === 'CLP') {
+    return '$' // Muestra cuántos pesos vale 1 USD/EUR
+  }
+  
+  // Para criptomonedas (Bitcoin en dólares americanos)
+  if (category === 'crypto') {
+    if (unit === 'USD') return 'US$'
+    return unit
+  }
+  
+  // Para porcentajes (TPM, etc.)
+  if (unit === '%' || unit === 'percent') return '%'
+  
+  // Por defecto
   return unit
 }
 
@@ -107,7 +124,7 @@ export default function IndicatorsTicker() {
           code: ind.code.toUpperCase(),
           name: getShortName(ind.name),
           value: ind.value,
-          unit: getDisplayUnit(ind.unit, ind.category === 'monetary' ? 'currency' : 'percentage'),
+          unit: getDisplayUnit(ind.unit, ind.category),
           change: parseFloat(change.toFixed(2)),
           trend
         };

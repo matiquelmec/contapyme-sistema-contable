@@ -1015,7 +1015,7 @@ function getFallbackIndicators() {
       code: 'dolar',
       name: 'Dólar Observado',
       value: 964.58, // Valor real actualizado Sept 2025
-      unit: 'CLP',
+      unit: 'CLP', // Pesos chilenos por dólar
       category: 'currency',
       updated_at: today
     },
@@ -1023,7 +1023,7 @@ function getFallbackIndicators() {
       code: 'euro',
       name: 'Euro',
       value: 1047.23, // Estimado actualizado
-      unit: 'CLP',
+      unit: 'CLP', // Pesos chilenos por euro
       category: 'currency',
       updated_at: today
     },
