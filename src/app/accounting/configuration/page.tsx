@@ -27,7 +27,7 @@ import {
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { Header } from '@/components/layout';
 import RCVTaxConfigModal from '@/components/accounting/RCVTaxConfigModal';
-import TaxConfigurationTable from '@/components/accounting/TaxConfigurationTableFixed';
+import CentralizedConfigTable from '@/components/accounting/CentralizedConfigTable';
 import RCVEntitiesManager from '@/components/accounting/RCVEntitiesManager';
 
 
@@ -765,7 +765,7 @@ export default function ConfigurationPage() {
                     <p className="text-sm">Configure el mapeo automático para integrar módulos con el plan de cuentas</p>
                   </div>
                 ) : (
-                  <TaxConfigurationTable 
+                  <CentralizedConfigTable 
                     configs={centralizedConfigs} 
                     onReload={loadCentralizedConfigs}
                   />
