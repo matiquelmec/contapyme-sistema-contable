@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { IndicatorValue, IndicatorsDashboard } from '@/types';
-import { useOptimizedPageIndicators } from '@/hooks/useOptimizedIndicators';
+import { useSmartIndicators } from '@/hooks/useSmartIndicators';
 import { RefreshCw, TrendingUp, DollarSign, Zap, Users, Info, Calendar } from 'lucide-react';
 import CacheStatus from '@/components/indicators/CacheStatus';
 
@@ -13,34 +13,45 @@ export default function EconomicIndicatorsPage() {
     indicators, 
     loading, 
     error, 
-    lastUpdated, 
-    dataSource, 
-    cacheStatus,
-    fetchIndicators, 
-    forceRefresh 
-  } = useOptimizedPageIndicators();
+    lastUpdate,
+    manualRefresh,
+    canManualRefresh,
+    needsUpdate 
+  } = useSmartIndicators({
+    cacheTime: 10, // 10 minutos para la página detallada
+    backgroundRefresh: true,
+    autoRefreshInterval: 15 // 15 minutos
+  });
 
   const [updating, setUpdating] = useState(false);
   const [selectedIndicator, setSelectedIndicator] = useState<string | null>(null);
 
+  // Organizar indicadores por categoría para mantener compatibilidad
+  const organizedIndicators = {
+    monetary: indicators.filter(ind => ind.category === 'monetary'),
+    currency: indicators.filter(ind => ind.category === 'currency'),  
+    crypto: indicators.filter(ind => ind.category === 'crypto'),
+    labor: indicators.filter(ind => ind.category === 'labor')
+  };
+
   // Auto-actualización inteligente (solo una inicialización)
   useEffect(() => {
     const initializeIndicators = async () => {
-      if (!indicators.monetary.length && !indicators.currency.length) {
-        console.log('🤖 Inicializando indicadores automáticamente...');
-        setTimeout(() => {
-          updateWithClaude();
-        }, 2000);
+      if (organizedIndicators.monetary.length === 0 && organizedIndicators.currency.length === 0) {
+        console.log('🤖 Sistema inteligente: Actualizando indicadores automáticamente...');
+        // El nuevo hook ya maneja la actualización automática
       }
     };
     
     initializeIndicators();
-  }, []);
+  }, [organizedIndicators.monetary.length, organizedIndicators.currency.length]);
 
   const updateIndicators = async () => {
+    if (!canManualRefresh) return;
+    
     try {
       setUpdating(true);
-      await forceRefresh();
+      await manualRefresh();
     } catch (err) {
       console.error('Error updating indicators:', err);
     } finally {
@@ -52,12 +63,7 @@ export default function EconomicIndicatorsPage() {
     try {
       setUpdating(true);
 
-      const allIndicators = [
-        ...indicators.monetary,
-        ...indicators.currency,
-        ...indicators.crypto,
-        ...indicators.labor
-      ];
+      const allIndicators = indicators;
 
       const response = await fetch('/api/indicators/claude-fetch', {
         method: 'POST',
@@ -295,12 +301,14 @@ export default function EconomicIndicatorsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={updateWithClaude}
-              disabled={updating}
-              className="border-green-200 hover:bg-green-50 hover:border-green-300"
+              onClick={updateIndicators}
+              disabled={updating || !canManualRefresh}
+              className={`border-green-200 hover:bg-green-50 hover:border-green-300 ${
+                !canManualRefresh ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <RefreshCw className={`w-4 h-4 mr-1 ${updating ? 'animate-spin' : ''}`} />
-              Actualizar
+              {!canManualRefresh ? 'Espera 30s' : 'Actualizar'}
             </Button>
           </div>
         }
@@ -309,11 +317,11 @@ export default function EconomicIndicatorsPage() {
       <div className="relative z-10 max-w-7xl mx-auto py-8 px-4 space-y-8">
         {/* Cache Status Component */}
         <CacheStatus 
-          cacheStatus={cacheStatus}
-          dataSource={dataSource}
-          lastUpdated={lastUpdated}
+          cacheStatus={needsUpdate ? "expired" : "hit"}
+          dataSource="Smart System"
+          lastUpdated={lastUpdate?.toISOString() || new Date().toISOString()}
           loading={loading}
-          onForceRefresh={forceRefresh}
+          onForceRefresh={manualRefresh}
         />
 
         {/* Hero Section */}
@@ -332,17 +340,17 @@ export default function EconomicIndicatorsPage() {
         </div>
 
         {/* Status Card */}
-        {lastUpdated && (
+        {lastUpdate && (
           <Card className="bg-white/90 backdrop-blur-sm border-2 border-green-100">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-sm text-gray-600">
-                    Última actualización: {new Date(lastUpdated).toLocaleString('es-CL')}
+                    Última actualización: {lastUpdate.toLocaleString('es-CL')}
                   </span>
                   <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                    {dataSource === 'claude_ai' ? 'Claude AI' : 'Sistema Híbrido'}
+                    Sistema Inteligente
                   </span>
                 </div>
                 {error && (
@@ -357,14 +365,14 @@ export default function EconomicIndicatorsPage() {
 
         {/* Indicators by Category */}
         <div className="space-y-8">
-          {renderIndicatorCategory('monetary', indicators.monetary)}
-          {renderIndicatorCategory('currency', indicators.currency)}
-          {renderIndicatorCategory('crypto', indicators.crypto)}
-          {renderIndicatorCategory('labor', indicators.labor)}
+          {renderIndicatorCategory('monetary', organizedIndicators.monetary)}
+          {renderIndicatorCategory('currency', organizedIndicators.currency)}
+          {renderIndicatorCategory('crypto', organizedIndicators.crypto)}
+          {renderIndicatorCategory('labor', organizedIndicators.labor)}
         </div>
 
         {/* Empty State */}
-        {!loading && (!indicators.monetary.length && !indicators.currency.length && !indicators.crypto.length && !indicators.labor.length) && (
+        {!loading && (!organizedIndicators.monetary.length && !organizedIndicators.currency.length && !organizedIndicators.crypto.length && !organizedIndicators.labor.length) && (
           <Card className="bg-white/90 backdrop-blur-sm border-2 border-gray-200">
             <CardContent className="p-12 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">

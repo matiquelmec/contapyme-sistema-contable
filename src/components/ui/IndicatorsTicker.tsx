@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { useOptimizedTickerIndicators } from '@/hooks/useOptimizedIndicators'
+import { useSmartIndicators } from '@/hooks/useSmartIndicators'
 import { IndicatorValue } from '@/types'
 
 interface Indicator {
@@ -46,23 +46,6 @@ function IndicatorItem({ indicator }: { indicator: Indicator }) {
   )
 }
 
-// Convertir IndicatorValue a formato Indicator para el ticker
-function convertToTickerFormat(indicatorValue: IndicatorValue): Indicator {
-  // Simular cambio y tendencia basado en variación aleatoria pequeña
-  const change = (Math.random() - 0.5) * 0.5 // Cambio pequeño para efecto visual
-  const trend: 'up' | 'down' | 'stable' = 
-    Math.abs(change) < 0.1 ? 'stable' :
-    change > 0 ? 'up' : 'down'
-
-  return {
-    code: indicatorValue.code.toUpperCase(),
-    name: getShortName(indicatorValue.name),
-    value: indicatorValue.value,
-    unit: getDisplayUnit(indicatorValue.unit, indicatorValue.format_type),
-    change: parseFloat(change.toFixed(2)),
-    trend
-  }
-}
 
 // Obtener nombre corto para el ticker
 function getShortName(name: string): string {
@@ -92,32 +75,46 @@ export default function IndicatorsTicker() {
     indicators: rawIndicators, 
     loading, 
     error, 
-    dataSource, 
-    cacheStatus 
-  } = useOptimizedTickerIndicators()
+    lastUpdate,
+    canManualRefresh 
+  } = useSmartIndicators({
+    cacheTime: 3, // 3 minutos para el ticker (más frecuente)
+    backgroundRefresh: true,
+    autoRefreshInterval: 5 // 5 minutos
+  })
   const [indicators, setIndicators] = useState<Indicator[]>([])
 
-  // Convertir indicadores del sistema centralizado al formato del ticker
+  // Convertir indicadores del sistema inteligente al formato del ticker
   useEffect(() => {
-    if (!loading && rawIndicators) {
-      const allIndicators: IndicatorValue[] = [
-        ...rawIndicators.monetary,
-        ...rawIndicators.currency,
-        ...rawIndicators.crypto,
-        ...rawIndicators.labor
-      ]
-
+    if (!loading && rawIndicators && rawIndicators.length > 0) {
       // Filtrar y convertir los indicadores más relevantes para el ticker
-      const relevantIndicators = allIndicators.filter(ind => 
-        ['uf', 'utm', 'dolar', 'euro', 'bitcoin', 'tpm'].includes(ind.code.toLowerCase())
-      )
+      const relevantCodes = ['uf', 'utm', 'dolar', 'euro', 'bitcoin', 'tpm'];
+      const relevantIndicators = rawIndicators.filter(ind => 
+        relevantCodes.includes(ind.code.toLowerCase())
+      );
 
-      const tickerIndicators = relevantIndicators.map(convertToTickerFormat)
-      setIndicators(tickerIndicators)
+      const tickerIndicators = relevantIndicators.map((ind) => {
+        // Simular variación para efectos visuales
+        const change = (Math.random() - 0.5) * 0.5;
+        const trend: 'up' | 'down' | 'stable' = 
+          Math.abs(change) < 0.1 ? 'stable' :
+          change > 0 ? 'up' : 'down';
+
+        return {
+          code: ind.code.toUpperCase(),
+          name: getShortName(ind.name),
+          value: ind.value,
+          unit: getDisplayUnit(ind.unit, ind.category === 'monetary' ? 'currency' : 'percentage'),
+          change: parseFloat(change.toFixed(2)),
+          trend
+        };
+      });
+
+      setIndicators(tickerIndicators);
       
-      console.log(`📊 Ticker optimizado: ${tickerIndicators.length} indicadores desde: ${dataSource} (cache: ${cacheStatus})`)
+      console.log(`📊 Smart Ticker: ${tickerIndicators.length} indicadores actualizados ${lastUpdate ? `(${lastUpdate.toLocaleTimeString()})` : ''}`);
     }
-  }, [rawIndicators, loading, dataSource, cacheStatus])
+  }, [rawIndicators, loading, lastUpdate])
 
   if (loading || indicators.length === 0) {
     return (
