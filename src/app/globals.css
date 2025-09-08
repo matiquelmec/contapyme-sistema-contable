@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Variables del sistema base */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+    /* Paleta ContaPyme - Colores primarios */
+    --contapyme-blue-50: 239 246 255;
+    --contapyme-blue-100: 219 234 254;
+    --contapyme-blue-500: 59 130 246;
+    --contapyme-blue-600: 37 99 235;
+    --contapyme-blue-700: 29 78 216;
+    --contapyme-blue-900: 30 58 138;
+
+    /* Colores secundarios */
+    --contapyme-green-50: 240 253 244;
+    --contapyme-green-100: 220 252 231;
+    --contapyme-green-500: 16 185 129;
+    --contapyme-green-600: 5 150 105;
+    --contapyme-green-700: 4 120 87;
+
+    --contapyme-purple-50: 250 245 255;
+    --contapyme-purple-100: 243 232 255;
+    --contapyme-purple-500: 139 92 246;
+    --contapyme-purple-600: 124 58 237;
+    --contapyme-purple-700: 109 40 217;
+
+    --contapyme-yellow-50: 255 251 235;
+    --contapyme-yellow-100: 254 243 199;
+    --contapyme-yellow-500: 245 158 11;
+    --contapyme-yellow-600: 217 119 6;
+
+    /* Grises modernos */
+    --contapyme-gray-50: 249 250 251;
+    --contapyme-gray-100: 243 244 246;
+    --contapyme-gray-200: 229 231 235;
+    --contapyme-gray-300: 209 213 219;
+    --contapyme-gray-400: 156 163 175;
+    --contapyme-gray-500: 107 114 128;
+    --contapyme-gray-600: 75 85 99;
+    --contapyme-gray-700: 55 65 81;
+    --contapyme-gray-800: 31 41 55;
+    --contapyme-gray-900: 17 24 39;
+
+    /* Estados y notificaciones */
+    --contapyme-success: 16 185 129;
+    --contapyme-warning: 245 158 11;
+    --contapyme-error: 239 68 68;
+    --contapyme-info: 59 130 246;
+
+    /* Sombras */
+    --contapyme-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --contapyme-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --contapyme-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --contapyme-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --contapyme-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Animaciones para la pasarela de indicadores económicos */
+@layer utilities {
+  /* Scroll continuo de izquierda a derecha */
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll-left {
+    animation: scroll-left 45s linear infinite;
+  }
+
+  /* Animación más rápida para el ticker */
+  .animate-scroll-left-fast {
+    animation: scroll-left 20s linear infinite;
+  }
+
+  /* Animación continua sin pausa - para la pasarela */
+  .animate-scroll-continuous {
+    display: flex;
+    animation: scroll-infinite 20s linear infinite;
+  }
+  
+  /* Animación infinita específica para ticker continuo */
+  @keyframes scroll-infinite {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  /* Contenedor para el ticker infinito */
+  .ticker-content {
+    display: flex;
+    flex-shrink: 0;
+    min-width: 100%;
+  }
+
+  /* Pausa la animación al hacer hover (excepto continuous) */
+  .animate-scroll-left:hover,
+  .animate-scroll-left-fast:hover {
+    animation-play-state: paused;
+  }
+
+  /* Efectos adicionales para indicadores */
+  .indicator-glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .indicator-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Gradiente animado para el fondo */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  /* Scroll más rápido para mobile */
+  @media (max-width: 768px) {
+    .animate-scroll-left {
+      animation: scroll-left 30s linear infinite;
+    }
+    .animate-scroll-left-fast {
+      animation: scroll-left 15s linear infinite;
+    }
+    .animate-scroll-continuous {
+      animation: scroll-infinite 15s linear infinite;
+    }
+  }
+
+  /* Efectos de glassmorphism */
+  .glass-effect {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+}

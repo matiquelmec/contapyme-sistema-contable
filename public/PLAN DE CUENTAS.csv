@@ -1,0 +1,132 @@
+Cuenta;Nivel
+Activo;1er Nivel
+Activo Corriente;2do Nivel
+Efectivo y Equivalentes al Efectivo;3er Nivel
+Caja;Imputable
+Caja Chica;Imputable
+Caja Moneda Extranjera;Imputable
+Banco Estado;Imputable
+Caja Chica Dpto de Ventas;Imputable
+Activos Financieros;3er Nivel
+Fondos Mutuos;Imputable
+Inventarios;3er Nivel
+Existencias;Imputable
+Servicios y Otros pagos Anticipados;3er Nivel
+Anticipo de Proveedores;Imputable
+Anticipo de Sueldos;Imputable
+Anticipo de Honorarios;Imputable
+Clientes Nacionales;Imputable
+Activos por Impuestos Corrientes;3er Nivel
+Pagos Provisionales Mensuales;Imputable
+IVA CF;Imputable
+Remanente CF;Imputable
+IVA Anticipado;Imputable
+Remanente IVA Anticipado;Imputable
+Activos No Corrientes Disponibles para la venta y Operaciones discontinuadas;3er Nivel
+Otros Activos Corrientes;3er Nivel
+Activo No Corriente;2do Nivel
+Propiedad, Planta y Equipo;3er Nivel
+Instalaciones y Equipos;Imputable
+Muebles y Utiles;Imputable
+Equipos computacionales;Imputable
+Otras Maquinas y Equipos;Imputable
+Utencilios Cocina;Imputable
+Dep. Acum. Instalaciones y Equipos;Imputable
+Dep. Acum. Muebles y Utiles;Imputable
+Dep. Acum. Equipos computacionales;Imputable
+Dep. Acum. Otras Maquinas y Equipos;Imputable
+Dep. Acum. Utencilios Cocina;Imputable
+Propiedades de Inversion;3er Nivel
+Activos Biologicos;3er Nivel
+Activos Intangible;3er Nivel
+Activos por Impuesto a la Renta Diferido;3er Nivel
+Activos Financieros No Corrientes;3er Nivel
+Pasivos;1er Nivel
+Pasivos Corrientes;2do Nivel
+Pasivos Financieros a Valor Razonable con Cambios en Resultado;3er Nivel
+Pasivos por Contratos de Arrendamiento Financiero;3er Nivel
+Cuentas y Documentos por Pagar;3er Nivel
+Proveedores Nacionales;Imputable
+Honorarios por Pagar;Imputable
+Sueldos por Pagar;Imputable
+Obligaciones con Instituciones Financieras;3er Nivel
+Credito FGP Banco Estado;Imputable
+Provisiones;3er Nivel
+Porción Corriente Obligaciones Emitidas;3er Nivel
+Otras Obligaciones Corrientes;3er Nivel
+IVA DF;Imputable
+Retención 2° Categoria;Imputable
+Impuesto Unico;Imputable
+IVA por Pagar;Imputable
+Instituciones Previsionales;Imputable
+Ret. 3% RTA 42 NR1 Reint;Imputable
+PPM por pagar;Imputable
+Cuentas por Pagar Diversas / Relacionadas;3er Nivel
+Otros Pasivos Financieros;3er Nivel
+Anticipo Clientes;3er Nivel
+Pasivos Directamente Asociados con Activos no Corrientes Disponibles para la Venta y Operaciones Discontinuadas;3er Nivel
+Porción Corriente Provisiones por Beneficios a Empleados;3er Nivel
+Pasivo No Corriente;2do Nivel
+Pasivos por Contratos de Arrendamiento Financiero;3er Nivel
+Cuentas y Documentos por Pagar;3er Nivel
+Obligaciones con Instituciones Financieras;3er Nivel
+Cuentas por Pagar Diversas / Relacionadas;3er Nivel
+Obligaciones Emitidas;3er Nivel
+Anticipo Clientes;3er Nivel
+Provisiones por Beneficios a Empleados;3er Nivel
+Otras Provisiones;3er Nivel
+Provision Impuesto Renta;Imputable
+Pasivo Diferido;3er Nivel
+Patrimonio Neto;2do Nivel
+Capital Suscrito o Asignado;3er Nivel
+Capital;Imputable
+Fondo Reval. Capital Propio;Imputable
+(-) Capital Suscrito no Pagado, Acciones en Tesoreria;3er Nivel
+Aportes de Socios o Accionistas para Futura Capitalización;3er Nivel
+Aportes por enterar;Imputable
+Reservas;3er Nivel
+Otros Resultados Integrales;3er Nivel
+Resultados Acumulados;3er Nivel
+Perdidas Acumuladas;Imputable
+Resultado del Ejercicio;3er Nivel
+Perdidas y Ganancias;Imputable
+Gastos;1er Nivel
+Gastos de Explotación;2do Nivel
+Costos de Venta;3er Nivel
+Costos de Venta;Imputable
+Remuneraciones y leyes sociales;Imputable
+Aporte Patronal;Imputable
+Gastos Fuera de Explotación;2do Nivel
+Gastos de Administración;3er Nivel
+Honorarios;Imputable
+Asesorias Contables;Imputable
+Consumos Basicos;Imputable
+Fletes;Imputable
+Gastos Generales;Imputable
+Gastos Oficina;Imputable
+Repuestos, Reparacion;Imputable
+Servicios Contratados;Imputable
+Gastos de Comercialización;3er Nivel
+Gastos Financieros;3er Nivel
+Comisiones Bancarias;Imputable
+Comisiones Transbank;Imputable
+Otros Gastos Financieros;3er Nivel
+Otras Perdidas;3er Nivel
+Multas e Intereses Fiscales;Imputable
+Resultado en Inversiones en Asociadas / Subsidiarias y Otras;3er Nivel
+Diferencia de Cambio;3er Nivel
+Corrección Monetaria;3er Nivel
+Corrección Monetaria;Imputable
+Ingreso;1er Nivel
+Ingresos de Explotación;2do Nivel
+Ingresos de la Operación;3er Nivel
+Ventas;Imputable
+Ingresos Fuera de Explotación;2do Nivel
+Otros Ingresos;3er Nivel
+Ingresos Financieros;3er Nivel
+Otros Ingresos Financieros;3er Nivel
+Otras Ganancias;3er Nivel
+Diferencias de Cambio;3er Nivel
+Diferencias de Cambio;Imputable
+Resultado en Inversiones en Asociadas / Subsidiarias y Otras;3er Nivel
+Corrección Monetaria;3er Nivel
