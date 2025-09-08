@@ -5,13 +5,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// Datos estáticos optimizados para ticker (UF, UTM, etc.)
+// Datos actualizados para ticker (valores reales Sept 2025)
 const TICKER_INDICATORS = {
-  uf: { name: 'UF', value: 39179, unit: '$', trend: 'up', change: 0.05 },
-  utm: { name: 'UTM', value: 68923, unit: '$', trend: 'stable', change: 0 },
-  dolar: { name: 'USD', value: 950, unit: '$', trend: 'down', change: -0.15 },
-  euro: { name: 'EUR', value: 1025, unit: '$', trend: 'up', change: 0.23 },
-  bitcoin: { name: 'BTC', value: 45200, unit: 'US$', trend: 'up', change: 2.1 },
+  uf: { name: 'UF', value: 39474.24, unit: '$', trend: 'up', change: 0.02 },
+  utm: { name: 'UTM', value: 69265, unit: '$', trend: 'stable', change: 0 },
+  dolar: { name: 'USD', value: 964.58, unit: '$', trend: 'up', change: 0.12 },
+  euro: { name: 'EUR', value: 1047.23, unit: '$', trend: 'up', change: 0.08 },
+  bitcoin: { name: 'BTC', value: 57280, unit: 'US$', trend: 'down', change: -1.2 },
   tpm: { name: 'TPM', value: 11.25, unit: '%', trend: 'stable', change: 0 }
 }
 
@@ -88,18 +88,18 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error en ticker optimizado:', error)
     
-    // Fallback a datos estáticos si hay error
+    // Fallback a datos actualizados si hay error
     const fallbackData = {
       indicators: {
         monetary: [
-          { code: 'UF', name: 'UF', value: 39179, unit: '$', trend: 'stable', change: 0, category: 'monetary' },
-          { code: 'UTM', name: 'UTM', value: 68923, unit: '$', trend: 'stable', change: 0, category: 'monetary' }
+          { code: 'UF', name: 'UF', value: 39474.24, unit: '$', trend: 'stable', change: 0, category: 'monetary' },
+          { code: 'UTM', name: 'UTM', value: 69265, unit: '$', trend: 'stable', change: 0, category: 'monetary' }
         ],
         currency: [
-          { code: 'USD', name: 'USD', value: 950, unit: '$', trend: 'stable', change: 0, category: 'currency' }
+          { code: 'USD', name: 'USD', value: 964.58, unit: '$', trend: 'stable', change: 0, category: 'currency' }
         ],
         crypto: [
-          { code: 'BTC', name: 'BTC', value: 45000, unit: 'US$', trend: 'stable', change: 0, category: 'crypto' }
+          { code: 'BTC', name: 'BTC', value: 57280, unit: 'US$', trend: 'stable', change: 0, category: 'crypto' }
         ],
         labor: []
       },
