@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('🔍 API empleados llamada para company_id:', companyId, 'search_rut:', searchRut, 'employee_id:', employeeId);
+    // Removed excessive logging
 
     // ✅ Verificar configuración Supabase
     if (!isSupabaseConfigured()) {
@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('employees')
       .select(`
-        id, rut, first_name, last_name, middle_name, email, phone, status,
+        id, rut, first_name, last_name, middle_name, full_name, email, phone, employment_status,
         employment_contracts (
-          id, position, department, base_salary, weekly_hours, status, contract_type, start_date, end_date
+          id, position, department, base_salary, working_hours_per_week, is_current, contract_type, start_date, end_date
         ),
         payroll_config (
           afp_code, health_institution_code
@@ -56,12 +56,12 @@ export async function GET(request: NextRequest) {
     // 🎯 FILTROS ESPECÍFICOS
     if (searchRut) {
       query = query.eq('rut', searchRut);
-      console.log('🔎 Buscando empleado con RUT:', searchRut);
+      // Searching by RUT
     } else if (employeeId) {
       query = query.eq('id', employeeId);
-      console.log('🔎 Buscando empleado con ID:', employeeId);
+      // Searching by ID
     } else {
-      query = query.order('first_name', { ascending: true }).limit(100);
+      query = query.order('full_name', { ascending: true }).limit(100);
     }
     
     const { data: employees, error } = await query;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('✅ Empleados desde Supabase:', employees?.length || 0);
+    // Employees loaded successfully
 
     return NextResponse.json({
       success: true,

@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
         employees (
           rut,
           first_name,
-          last_name
+          last_name,
+          full_name
         )
       `)
       .eq('company_id', companyId)
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
     const formattedLiquidations = liquidations?.map(liquidation => ({
       id: liquidation.id,
       employee_id: liquidation.employee_id,
-      employee_name: `${liquidation.employees?.first_name || ''} ${liquidation.employees?.last_name || ''}`.trim(),
+      employee_name: liquidation.employees?.full_name || `${liquidation.employees?.first_name || ''} ${liquidation.employees?.last_name || ''}`.trim(),
       employee_rut: liquidation.employees?.rut || '',
       period_year: liquidation.period_year,
       period_month: liquidation.period_month,
