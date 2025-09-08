@@ -981,6 +981,25 @@ async function fetchRealIndicators() {
       console.warn('Error fetching TPM:', error);
     }
 
+    // Sueldo Mínimo Chile - Valor oficial 2025
+    // Fuente: Ministerio del Trabajo y Previsión Social (mintrab.gob.cl)
+    // $529.000 desde mayo 1, 2025 según Ley N°21.751
+    try {
+      realData.push({
+        code: 'sueldo_minimo',
+        name: 'Sueldo Mínimo',
+        value: 529000,
+        unit: 'CLP',
+        category: 'labor',
+        format_type: 'currency',
+        decimal_places: 0,
+        description: 'Ingreso Mínimo Mensual (18-65 años) vigente desde mayo 2025',
+        updated_at: today
+      });
+    } catch (error) {
+      console.warn('Error adding minimum wage:', error);
+    }
+
     console.log(`✅ Indicadores reales obtenidos: ${realData.length}`);
     return realData;
 
@@ -1041,6 +1060,17 @@ function getFallbackIndicators() {
       value: 4.75, // Valor oficial Banco Central Sept 8, 2025 (CORREGIDO)
       unit: '%',
       category: 'monetary',
+      updated_at: today
+    },
+    {
+      code: 'sueldo_minimo',
+      name: 'Sueldo Mínimo',
+      value: 529000, // Valor oficial mayo 2025 - Ley N°21.751
+      unit: 'CLP',
+      category: 'labor',
+      format_type: 'currency',
+      decimal_places: 0,
+      description: 'Ingreso Mínimo Mensual (18-65 años) vigente desde mayo 2025',
       updated_at: today
     }
   ];

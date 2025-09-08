@@ -1,29 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout';
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
-import { IndicatorValue, IndicatorsDashboard } from '@/types';
+import { useState } from 'react';
+import { MinimalHeader } from '@/components/layout';
+import { IndicatorValue } from '@/types';
 import { useSmartIndicators } from '@/hooks/useSmartIndicators';
-import { RefreshCw, TrendingUp, DollarSign, Zap, Users, Info, Calendar, Clock, Database, ArrowUp, ArrowDown, Minus, BadgeCheck } from 'lucide-react';
-import CacheStatus from '@/components/indicators/CacheStatus';
+import { TrendingUp, DollarSign, Zap, Users, Info, Calendar, Database, Minus, BadgeCheck, Clock } from 'lucide-react';
 
 export default function EconomicIndicatorsPage() {
   const { 
     indicators, 
     loading, 
     error, 
-    lastUpdate,
-    manualRefresh,
-    canManualRefresh,
-    needsUpdate 
+    lastUpdate
   } = useSmartIndicators({
     cacheTime: 10, // 10 minutos para la página detallada
     backgroundRefresh: true,
     autoRefreshInterval: 15 // 15 minutos
   });
 
-  const [updating, setUpdating] = useState(false);
   const [selectedIndicator, setSelectedIndicator] = useState<string | null>(null);
 
   // Organizar indicadores por categoría para mantener compatibilidad
@@ -35,100 +29,32 @@ export default function EconomicIndicatorsPage() {
     labor: safeIndicators.filter(ind => ind.category === 'labor')
   };
 
-  // Auto-actualización inteligente (solo una inicialización)
-  useEffect(() => {
-    const initializeIndicators = async () => {
-      if (organizedIndicators.monetary.length === 0 && organizedIndicators.currency.length === 0) {
-        console.log('🤖 Sistema inteligente: Actualizando indicadores automáticamente...');
-        // El nuevo hook ya maneja la actualización automática
-      }
-    };
-    
-    initializeIndicators();
-  }, [organizedIndicators.monetary.length, organizedIndicators.currency.length]);
-
-  const updateIndicators = async () => {
-    if (!canManualRefresh) return;
-    
-    try {
-      setUpdating(true);
-      await manualRefresh();
-    } catch (err) {
-      console.error('Error updating indicators:', err);
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const updateWithClaude = async () => {
-    try {
-      setUpdating(true);
-
-      const allIndicators = safeIndicators;
-
-      const response = await fetch('/api/indicators/claude-fetch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          indicators: allIndicators.map(ind => ({
-            code: ind.code,
-            name: ind.name,
-            description: `${ind.name} - valor actual en tiempo real`
-          }))
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al actualizar con Claude');
-      }
-
-      // Forzar actualización del hook
-      await manualRefresh();
-      console.log(`✅ Actualización exitosa: ${data.results?.filter(r => r.success).length || 0} indicadores`);
-      
-    } catch (err) {
-      console.error('❌ Error con actualización:', err);
-      try {
-        await updateIndicators();
-      } catch (fallbackError) {
-        console.error('❌ Sistema de respaldo falló:', fallbackError);
-      }
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   const formatValue = (indicator: IndicatorValue): string => {
     const { value, format_type, decimal_places, unit, category } = indicator;
     
-    if (format_type === 'currency') {
-      if (unit === 'USD' || category === 'crypto' || indicator.code.toLowerCase() === 'bitcoin' || indicator.code.toLowerCase() === 'btc') {
-        return `US$${value.toLocaleString('en-US', { 
-          minimumFractionDigits: decimal_places || 0,
-          maximumFractionDigits: decimal_places || 0
-        })}`;
-      } else {
-        return `$${value.toLocaleString('es-CL', { 
-          minimumFractionDigits: decimal_places || 0,
-          maximumFractionDigits: decimal_places || 0
-        })} CLP`;
-      }
-    } else if (format_type === 'percentage') {
+    // Verificar primero si es TPM (Tasa de Política Monetaria) - debe ser porcentaje
+    if (indicator.code.toLowerCase() === 'tpm' || indicator.code.toLowerCase() === 'ipc' || unit === '%' || format_type === 'percentage') {
       return `${value.toFixed(decimal_places || 2)}%`;
+    }
+    
+    // Verificar si es Bitcoin o crypto - debe mostrar formato USD
+    if (unit === 'USD' || category === 'crypto' || indicator.code.toLowerCase() === 'bitcoin' || indicator.code.toLowerCase() === 'btc') {
+      return `US$${value.toLocaleString('en-US', { 
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      })}`;
+    }
+    
+    if (format_type === 'currency') {
+      return `$${value.toLocaleString('es-CL', { 
+        minimumFractionDigits: decimal_places || 0,
+        maximumFractionDigits: decimal_places || 0
+      })} CLP`;
     } else {
       // Para casos donde no hay format_type específico, inferir por categoría
       if (category === 'monetary' || category === 'currency') {
-        if (unit === 'USD' || indicator.code.toLowerCase() === 'bitcoin' || indicator.code.toLowerCase() === 'btc' || category === 'crypto') {
-          return `US$${value.toLocaleString('en-US')}`;
-        } else {
-          return `$${value.toLocaleString('es-CL')} CLP`;
-        }
-      } else if (indicator.code === 'tpm' || unit === '%') {
-        return `${value.toFixed(decimal_places || 2)}%`;
+        return `$${value.toLocaleString('es-CL')} CLP`;
       } else {
         return value.toLocaleString('es-CL', { 
           minimumFractionDigits: decimal_places || 0,
@@ -186,8 +112,8 @@ export default function EconomicIndicatorsPage() {
   const getCurrencyBadge = (indicator: IndicatorValue) => {
     const code = indicator.code.toLowerCase();
     
-    // Determinar el tipo de moneda/unidad
-    if (code === 'tpm' || indicator.unit === '%' || indicator.format_type === 'percentage') {
+    // Determinar el tipo de moneda/unidad - TPM y porcentajes PRIMERO
+    if (code === 'tpm' || code === 'ipc' || indicator.unit === '%' || indicator.format_type === 'percentage' || code.includes('tasa')) {
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
           <Minus className="w-3 h-3 mr-1" />
@@ -208,7 +134,7 @@ export default function EconomicIndicatorsPage() {
           CLP por unidad
         </span>
       );
-    } else if (indicator.category === 'monetary' || code === 'uf' || code === 'utm' || code === 'sueldo_minimo') {
+    } else if ((indicator.category === 'monetary' || code === 'uf' || code === 'utm' || code === 'sueldo_minimo') && code !== 'tpm') {
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
           <DollarSign className="w-3 h-3 mr-1" />
@@ -353,20 +279,21 @@ export default function EconomicIndicatorsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <MinimalHeader variant="premium" />
+        
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-2000" />
         </div>
         
-        <Header 
-          title="Indicadores Económicos"
-          subtitle="Cargando datos en tiempo real..."
-          variant="premium"
-          showBackButton
-          backHref="/accounting"
-        />
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">Indicadores Económicos</h1>
+            <p className="text-blue-100 text-lg">Cargando datos en tiempo real...</p>
+          </div>
+        </div>
         
-        <div className="relative z-10 max-w-6xl mx-auto py-8 px-4 flex items-center justify-center min-h-96">
+        <div className="relative z-10 max-w-7xl mx-auto py-8 px-4 flex items-center justify-center min-h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando indicadores económicos...</p>
@@ -378,6 +305,8 @@ export default function EconomicIndicatorsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <MinimalHeader variant="premium" />
+      
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob" />
@@ -390,60 +319,16 @@ export default function EconomicIndicatorsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <button 
-                  onClick={() => window.history.back()}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-sm transition-all duration-200"
-                >
-                  <ArrowUp className="w-5 h-5 rotate-[-90deg]" />
-                </button>
-                <h1 className="text-3xl sm:text-4xl font-bold">
-                  Indicadores Económicos
-                </h1>
-              </div>
-              <p className="text-blue-100 text-lg mb-6">
-                UF, UTM, divisas y criptomonedas actualizadas en tiempo real desde fuentes oficiales
+              <h1 className="text-3xl sm:text-4xl font-bold mb-4">
+                Indicadores Económicos
+              </h1>
+              <p className="text-blue-100 text-lg">
+                Datos económicos oficiales actualizados automáticamente
               </p>
-              
-              {/* Quick stats en hero */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                  <div className="text-2xl font-bold">
-                    {organizedIndicators.monetary.length}
-                  </div>
-                  <div className="text-xs text-blue-100">Monetarios</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                  <div className="text-2xl font-bold">
-                    {organizedIndicators.currency.length}
-                  </div>
-                  <div className="text-xs text-blue-100">Divisas</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                  <div className="text-2xl font-bold">
-                    {organizedIndicators.crypto.length}
-                  </div>
-                  <div className="text-xs text-blue-100">Cripto</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                  <div className="text-2xl font-bold flex items-center">
-                    <BadgeCheck className="w-5 h-5 mr-1" />
-                  </div>
-                  <div className="text-xs text-blue-100">Oficial</div>
-                </div>
-              </div>
             </div>
             
             {/* Acciones principales en hero */}
             <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full sm:w-auto lg:w-auto">
-              <Button 
-                onClick={updateIndicators}
-                disabled={updating || !canManualRefresh}
-                className="w-full group relative px-6 py-3 rounded-xl bg-green-500/80 hover:bg-green-500 border border-green-400/50 hover:border-green-400 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-white font-medium"
-              >
-                <RefreshCw className={`w-5 h-5 group-hover:scale-110 transition-transform ${updating ? 'animate-spin' : ''}`} />
-                <span>{!canManualRefresh ? 'Espera 30s' : 'Actualizar Datos'}</span>
-              </Button>
               <button 
                 onClick={() => window.open('/accounting', '_self')}
                 className="w-full group relative px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-white font-medium"
@@ -457,14 +342,6 @@ export default function EconomicIndicatorsPage() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto py-8 px-4 space-y-8">
-        {/* Cache Status Component */}
-        <CacheStatus 
-          cacheStatus={needsUpdate ? "expired" : "hit"}
-          dataSource="Smart System"
-          lastUpdated={lastUpdate?.toISOString() || new Date().toISOString()}
-          loading={loading}
-          onForceRefresh={manualRefresh}
-        />
 
         {/* Currency Legend */}
         <div className="text-center mb-8">
@@ -514,26 +391,79 @@ export default function EconomicIndicatorsPage() {
           {renderIndicatorCategory('labor', organizedIndicators.labor)}
         </div>
 
-        {/* Empty State */}
-        {!loading && (!organizedIndicators.monetary.length && !organizedIndicators.currency.length && !organizedIndicators.crypto.length && !organizedIndicators.labor.length) && (
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <DollarSign className="w-8 h-8 text-gray-400" />
+        {/* Data Sources Information */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+            <div className="flex items-center space-x-2 mb-2">
+              <BadgeCheck className="w-5 h-5" />
+              <span className="text-xl font-bold">Fuentes Oficiales</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay indicadores disponibles</h3>
-            <p className="text-gray-600 mb-6">
-              Haz clic en "Actualizar" para cargar los indicadores económicos más recientes.
-            </p>
-            <Button 
-              onClick={updateWithClaude}
-              disabled={updating}
-              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
-              Cargar Indicadores
-            </Button>
+            <p className="text-blue-100">Datos actualizados automáticamente desde organismos oficiales</p>
           </div>
-        )}
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Banco Central */}
+              <div className="bg-blue-50/80 rounded-xl p-4 border border-blue-200/50">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-semibold text-blue-900">Banco Central</span>
+                </div>
+                <p className="text-sm text-blue-700 mb-2">mindicador.cl</p>
+                <ul className="text-xs text-blue-600 space-y-1">
+                  <li>• UF, UTM, TPM</li>
+                  <li>• Dólar, Euro</li>
+                  <li>• Datos oficiales BC</li>
+                </ul>
+              </div>
+
+              {/* Ministerio del Trabajo */}
+              <div className="bg-purple-50/80 rounded-xl p-4 border border-purple-200/50">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-semibold text-purple-900">Min. Trabajo</span>
+                </div>
+                <p className="text-sm text-purple-700 mb-2">mintrab.gob.cl</p>
+                <ul className="text-xs text-purple-600 space-y-1">
+                  <li>• Sueldo Mínimo</li>
+                  <li>• Ley N°21.751</li>
+                  <li>• Actualización mayo 2025</li>
+                </ul>
+              </div>
+
+              {/* CoinGecko */}
+              <div className="bg-orange-50/80 rounded-xl p-4 border border-orange-200/50">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-semibold text-orange-900">CoinGecko</span>
+                </div>
+                <p className="text-sm text-orange-700 mb-2">api.coingecko.com</p>
+                <ul className="text-xs text-orange-600 space-y-1">
+                  <li>• Bitcoin, Ethereum</li>
+                  <li>• Precio en USD</li>
+                  <li>• API confiable global</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-green-50/80 rounded-xl border border-green-200/50">
+              <div className="flex items-center space-x-2 mb-2">
+                <Clock className="w-4 h-4 text-green-600" />
+                <span className="font-medium text-green-900">Actualización Automática</span>
+              </div>
+              <p className="text-sm text-green-700">
+                Los datos se actualizan automáticamente cada vez que visitas la página. 
+                No necesitas hacer nada, siempre tendrás la información más reciente disponible.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Quick Actions */}
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">

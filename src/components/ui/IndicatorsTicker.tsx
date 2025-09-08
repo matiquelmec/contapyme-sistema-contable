@@ -14,37 +14,6 @@ interface Indicator {
   trend?: 'up' | 'down' | 'stable'
 }
 
-// Componente para cada indicador individual
-function IndicatorItem({ indicator }: { indicator: Indicator }) {
-  return (
-    <div className="flex items-center space-x-2 text-white whitespace-nowrap">
-      <span className="text-sm font-semibold text-blue-200">
-        {indicator.name}:
-      </span>
-      <span className="text-sm font-bold">
-        {indicator.unit === '%' 
-          ? `${indicator.value}%`
-          : `${indicator.unit}${indicator.value.toLocaleString('es-CL')}`
-        }
-      </span>
-      {indicator.change !== undefined && indicator.change !== 0 && (
-        <div className={`flex items-center space-x-1 ${
-          indicator.trend === 'up' 
-            ? 'text-green-400' 
-            : indicator.trend === 'down'
-            ? 'text-red-400'
-            : 'text-gray-400'
-        }`}>
-          {indicator.trend === 'up' && <TrendingUp className="w-3 h-3" />}
-          {indicator.trend === 'down' && <TrendingDown className="w-3 h-3" />}
-          <span className="text-xs">
-            {indicator.change > 0 ? '+' : ''}{indicator.change}
-          </span>
-        </div>
-      )}
-    </div>
-  )
-}
 
 
 // Obtener nombre corto para el ticker
@@ -114,8 +83,8 @@ export default function IndicatorsTicker() {
       );
 
       const tickerIndicators = relevantIndicators.map((ind) => {
-        // Simular variación para efectos visuales
-        const change = (Math.random() - 0.5) * 0.5;
+        // Usar cambio real si está disponible, sino mostrar como estable
+        const change = ind.change || 0;
         const trend: 'up' | 'down' | 'stable' = 
           Math.abs(change) < 0.1 ? 'stable' :
           change > 0 ? 'up' : 'down';
@@ -125,14 +94,17 @@ export default function IndicatorsTicker() {
           name: getShortName(ind.name),
           value: ind.value,
           unit: getDisplayUnit(ind.unit, ind.category),
-          change: parseFloat(change.toFixed(2)),
+          change: change,
           trend
         };
       });
 
       setIndicators(tickerIndicators);
       
-      console.log(`📊 Smart Ticker: ${tickerIndicators.length} indicadores actualizados ${lastUpdate ? `(${lastUpdate.toLocaleTimeString()})` : ''}`);
+      // Solo hacer log si hay cambios significativos
+      if (tickerIndicators.length > 0) {
+        console.log(`📊 Smart Ticker: ${tickerIndicators.length} indicadores cargados`);
+      }
     }
   }, [rawIndicators, loading, lastUpdate])
 
