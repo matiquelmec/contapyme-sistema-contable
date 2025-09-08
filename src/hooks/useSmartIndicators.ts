@@ -111,7 +111,21 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
         throw new Error(result.error || 'Error desconocido');
       }
 
-      const indicatorsData = result.data || [];
+      const rawData = result.data || {};
+      
+      // Convertir datos organizados por categoría a array plano
+      let indicatorsData = [];
+      if (Array.isArray(rawData)) {
+        // Si ya es array (formato antiguo), usarlo directamente
+        indicatorsData = rawData;
+      } else {
+        // Si es objeto por categorías (formato nuevo), aplanarlo
+        Object.values(rawData).forEach(categoryArray => {
+          if (Array.isArray(categoryArray)) {
+            indicatorsData = indicatorsData.concat(categoryArray);
+          }
+        });
+      }
       
       // Actualizar estado y cache
       setIndicators(indicatorsData);
@@ -184,7 +198,20 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
       
       if (cached && !needsUpdate()) {
         console.log('📋 Usando indicadores desde cache');
-        setIndicators(cached.data);
+        
+        // Convertir datos del cache al formato array plano
+        let cachedIndicators = [];
+        if (Array.isArray(cached.data)) {
+          cachedIndicators = cached.data;
+        } else {
+          Object.values(cached.data || {}).forEach(categoryArray => {
+            if (Array.isArray(categoryArray)) {
+              cachedIndicators = cachedIndicators.concat(categoryArray);
+            }
+          });
+        }
+        
+        setIndicators(cachedIndicators);
         setLastUpdate(new Date(cached.timestamp));
         setLoading(false);
         return;
@@ -198,7 +225,20 @@ export const useSmartIndicators = (options: UseSmartIndicatorsOptions = {}) => {
         // Si falla, intentar usar cache aunque esté expirado
         if (cached) {
           console.log('⚠️ Usando cache expirado como fallback');
-          setIndicators(cached.data);
+          
+          // Convertir datos del cache al formato array plano
+          let cachedIndicators = [];
+          if (Array.isArray(cached.data)) {
+            cachedIndicators = cached.data;
+          } else {
+            Object.values(cached.data || {}).forEach(categoryArray => {
+              if (Array.isArray(categoryArray)) {
+                cachedIndicators = cachedIndicators.concat(categoryArray);
+              }
+            });
+          }
+          
+          setIndicators(cachedIndicators);
           setLastUpdate(new Date(cached.timestamp));
         }
         setLoading(false);

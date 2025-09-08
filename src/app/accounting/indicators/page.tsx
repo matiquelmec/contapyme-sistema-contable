@@ -27,11 +27,12 @@ export default function EconomicIndicatorsPage() {
   const [selectedIndicator, setSelectedIndicator] = useState<string | null>(null);
 
   // Organizar indicadores por categoría para mantener compatibilidad
+  const safeIndicators = Array.isArray(indicators) ? indicators : [];
   const organizedIndicators = {
-    monetary: indicators.filter(ind => ind.category === 'monetary'),
-    currency: indicators.filter(ind => ind.category === 'currency'),  
-    crypto: indicators.filter(ind => ind.category === 'crypto'),
-    labor: indicators.filter(ind => ind.category === 'labor')
+    monetary: safeIndicators.filter(ind => ind.category === 'monetary'),
+    currency: safeIndicators.filter(ind => ind.category === 'currency'),  
+    crypto: safeIndicators.filter(ind => ind.category === 'crypto'),
+    labor: safeIndicators.filter(ind => ind.category === 'labor')
   };
 
   // Auto-actualización inteligente (solo una inicialización)
@@ -63,7 +64,7 @@ export default function EconomicIndicatorsPage() {
     try {
       setUpdating(true);
 
-      const allIndicators = indicators;
+      const allIndicators = safeIndicators;
 
       const response = await fetch('/api/indicators/claude-fetch', {
         method: 'POST',
@@ -85,7 +86,8 @@ export default function EconomicIndicatorsPage() {
         throw new Error(data.error || 'Error al actualizar con Claude');
       }
 
-      await fetchIndicators();
+      // Forzar actualización del hook
+      await manualRefresh();
       console.log(`✅ Actualización exitosa: ${data.results?.filter(r => r.success).length || 0} indicadores`);
       
     } catch (err) {
