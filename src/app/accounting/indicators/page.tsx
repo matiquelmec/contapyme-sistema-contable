@@ -106,11 +106,11 @@ export default function EconomicIndicatorsPage() {
     const { value, format_type, decimal_places, unit, category } = indicator;
     
     if (format_type === 'currency') {
-      if (unit === 'USD' || category === 'crypto') {
-        return `$${value.toLocaleString('en-US', { 
+      if (unit === 'USD' || category === 'crypto' || indicator.code.toLowerCase() === 'bitcoin' || indicator.code.toLowerCase() === 'btc') {
+        return `US$${value.toLocaleString('en-US', { 
           minimumFractionDigits: decimal_places || 0,
           maximumFractionDigits: decimal_places || 0
-        })} USD`;
+        })}`;
       } else {
         return `$${value.toLocaleString('es-CL', { 
           minimumFractionDigits: decimal_places || 0,
@@ -122,8 +122,8 @@ export default function EconomicIndicatorsPage() {
     } else {
       // Para casos donde no hay format_type específico, inferir por categoría
       if (category === 'monetary' || category === 'currency') {
-        if (unit === 'USD' || indicator.code === 'bitcoin') {
-          return `$${value.toLocaleString('en-US')} USD`;
+        if (unit === 'USD' || indicator.code.toLowerCase() === 'bitcoin' || indicator.code.toLowerCase() === 'btc' || category === 'crypto') {
+          return `US$${value.toLocaleString('en-US')}`;
         } else {
           return `$${value.toLocaleString('es-CL')} CLP`;
         }
@@ -282,22 +282,22 @@ export default function EconomicIndicatorsPage() {
     const Icon = config.icon;
 
     return (
-      <Card key={category} className="bg-white/90 backdrop-blur-sm border-2 border-gray-100 hover:border-gray-200 transition-colors">
-        <CardHeader className={`bg-gradient-to-r ${config.gradient} text-white`}>
-          <CardTitle className="flex items-center space-x-3">
+      <div key={category} className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/80 transition-all duration-200">
+        <div className={`bg-gradient-to-r ${config.gradient} text-white p-6 rounded-t-2xl`}>
+          <div className="flex items-center space-x-3">
             <Icon className="w-6 h-6" />
-            <span>{config.title}</span>
-            <span className="bg-white/20 px-2 py-1 rounded-full text-xs">
+            <span className="text-xl font-bold">{config.title}</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
               {data.length} indicadores
             </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
+          </div>
+        </div>
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {data.map((indicator) => (
               <div 
                 key={indicator.code}
-                className={`${config.bgColor} p-4 rounded-xl border ${config.borderColor} hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-[1.02]`}
+                className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/20 hover:bg-white/80 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-[1.02] group"
                 onClick={() => setSelectedIndicator(selectedIndicator === indicator.code ? null : indicator.code)}
               >
                 <div className="flex justify-between items-start mb-3">
@@ -345,8 +345,8 @@ export default function EconomicIndicatorsPage() {
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   };
 
@@ -385,33 +385,76 @@ export default function EconomicIndicatorsPage() {
         <div className="absolute top-40 left-40 w-80 h-80 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-4000" />
       </div>
       
-      <Header 
-        title="Indicadores Económicos"
-        subtitle="UF, UTM, divisas y criptomonedas actualizadas en tiempo real"
-        showBackButton={true}
-        backHref="/accounting"
-        variant="premium"
-        actions={
-          <div className="flex items-center space-x-3">
-            <div className="hidden md:flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-green-100 to-blue-100 rounded-full text-xs font-medium text-green-800">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span>Tiempo Real</span>
+      {/* Hero Section modernizado - Similar al payroll */}
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <button 
+                  onClick={() => window.history.back()}
+                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-sm transition-all duration-200"
+                >
+                  <ArrowUp className="w-5 h-5 rotate-[-90deg]" />
+                </button>
+                <h1 className="text-3xl sm:text-4xl font-bold">
+                  Indicadores Económicos
+                </h1>
+              </div>
+              <p className="text-blue-100 text-lg mb-6">
+                UF, UTM, divisas y criptomonedas actualizadas en tiempo real desde fuentes oficiales
+              </p>
+              
+              {/* Quick stats en hero */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                  <div className="text-2xl font-bold">
+                    {organizedIndicators.monetary.length}
+                  </div>
+                  <div className="text-xs text-blue-100">Monetarios</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                  <div className="text-2xl font-bold">
+                    {organizedIndicators.currency.length}
+                  </div>
+                  <div className="text-xs text-blue-100">Divisas</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                  <div className="text-2xl font-bold">
+                    {organizedIndicators.crypto.length}
+                  </div>
+                  <div className="text-xs text-blue-100">Cripto</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                  <div className="text-2xl font-bold flex items-center">
+                    <BadgeCheck className="w-5 h-5 mr-1" />
+                  </div>
+                  <div className="text-xs text-blue-100">Oficial</div>
+                </div>
+              </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={updateIndicators}
-              disabled={updating || !canManualRefresh}
-              className={`border-green-200 hover:bg-green-50 hover:border-green-300 ${
-                !canManualRefresh ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <RefreshCw className={`w-4 h-4 mr-1 ${updating ? 'animate-spin' : ''}`} />
-              {!canManualRefresh ? 'Espera 30s' : 'Actualizar'}
-            </Button>
+            
+            {/* Acciones principales en hero */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full sm:w-auto lg:w-auto">
+              <Button 
+                onClick={updateIndicators}
+                disabled={updating || !canManualRefresh}
+                className="w-full group relative px-6 py-3 rounded-xl bg-green-500/80 hover:bg-green-500 border border-green-400/50 hover:border-green-400 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-white font-medium"
+              >
+                <RefreshCw className={`w-5 h-5 group-hover:scale-110 transition-transform ${updating ? 'animate-spin' : ''}`} />
+                <span>{!canManualRefresh ? 'Espera 30s' : 'Actualizar Datos'}</span>
+              </Button>
+              <button 
+                onClick={() => window.open('/accounting', '_self')}
+                className="w-full group relative px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-white font-medium"
+              >
+                <Database className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>Volver a Contabilidad</span>
+              </button>
+            </div>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto py-8 px-4 space-y-8">
         {/* Cache Status Component */}
@@ -423,22 +466,8 @@ export default function EconomicIndicatorsPage() {
           onForceRefresh={manualRefresh}
         />
 
-        {/* Enhanced Hero Section */}
+        {/* Currency Legend */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-blue-100 text-green-800 rounded-full text-sm font-medium mb-6">
-            <BadgeCheck className="w-4 h-4 mr-2" />
-            Fuentes Oficiales • Actualización Automática • Precisión Garantizada
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-            Indicadores Económicos Chilenos
-            <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"> en Tiempo Real</span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
-            Mantente informado con los valores más actualizados de UF, UTM, tipos de cambio y criptomonedas. 
-            Todos los valores incluyen detalles específicos sobre su moneda de referencia.
-          </p>
-          
-          {/* Currency Legend */}
           <div className="flex flex-wrap justify-center gap-3 text-sm">
             <div className="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
               <DollarSign className="w-4 h-4 mr-1" />
@@ -457,26 +486,24 @@ export default function EconomicIndicatorsPage() {
 
         {/* Status Card */}
         {lastUpdate && (
-          <Card className="bg-white/90 backdrop-blur-sm border-2 border-green-100">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-gray-600">
-                    Última actualización: {lastUpdate.toLocaleString('es-CL')}
-                  </span>
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                    Sistema Inteligente
-                  </span>
-                </div>
-                {error && (
-                  <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                    {error}
-                  </span>
-                )}
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-600">
+                  Última actualización: {lastUpdate.toLocaleString('es-CL')}
+                </span>
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                  Sistema Inteligente
+                </span>
               </div>
-            </CardContent>
-          </Card>
+              {error && (
+                <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                  {error}
+                </span>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Indicators by Category */}
@@ -489,70 +516,62 @@ export default function EconomicIndicatorsPage() {
 
         {/* Empty State */}
         {!loading && (!organizedIndicators.monetary.length && !organizedIndicators.currency.length && !organizedIndicators.crypto.length && !organizedIndicators.labor.length) && (
-          <Card className="bg-white/90 backdrop-blur-sm border-2 border-gray-200">
-            <CardContent className="p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <DollarSign className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay indicadores disponibles</h3>
-              <p className="text-gray-600 mb-6">
-                Haz clic en "Actualizar" para cargar los indicadores económicos más recientes.
-              </p>
-              <Button 
-                onClick={updateWithClaude}
-                disabled={updating}
-                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
-                Cargar Indicadores
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <DollarSign className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay indicadores disponibles</h3>
+            <p className="text-gray-600 mb-6">
+              Haz clic en "Actualizar" para cargar los indicadores económicos más recientes.
+            </p>
+            <Button 
+              onClick={updateWithClaude}
+              disabled={updating}
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+              Cargar Indicadores
+            </Button>
+          </div>
         )}
 
         {/* Quick Actions */}
-        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              <span>Acciones Rápidas</span>
-            </CardTitle>
-            <CardDescription>
-              Explora otras funcionalidades relacionadas con análisis financiero
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button 
-                variant="outline" 
-                fullWidth
-                onClick={() => window.open('/accounting/f29-analysis', '_blank')}
-                className="border-blue-200 hover:bg-blue-50 hover:border-blue-300"
-              >
-                <DollarSign className="w-4 h-4 mr-2" />
-                Análisis F29
-              </Button>
-              <Button 
-                variant="outline" 
-                fullWidth
-                onClick={() => window.open('/accounting/f29-comparative', '_blank')}
-                className="border-purple-200 hover:bg-purple-50 hover:border-purple-300"
-              >
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Análisis Comparativo
-              </Button>
-              <Button 
-                variant="outline" 
-                fullWidth
-                onClick={() => window.location.href = '/accounting'}
-                className="border-green-200 hover:bg-green-50 hover:border-green-300"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Volver a Contabilidad
-              </Button>
+        <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-green-500 to-blue-600 text-white p-6">
+            <div className="flex items-center space-x-2 mb-2">
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-xl font-bold">Acciones Rápidas</span>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-green-100">
+              Explora otras funcionalidades relacionadas con análisis financiero
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button 
+                onClick={() => window.open('/accounting/f29-analysis', '_blank')}
+                className="group relative px-4 py-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+              >
+                <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                Análisis F29
+              </button>
+              <button 
+                onClick={() => window.open('/accounting/f29-comparative', '_blank')}
+                className="group relative px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/40 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-purple-600 hover:text-purple-700 font-medium"
+              >
+                <TrendingUp className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                Análisis Comparativo
+              </button>
+              <button 
+                onClick={() => window.location.href = '/accounting'}
+                className="group relative px-4 py-3 rounded-xl bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 hover:border-green-500/40 backdrop-blur-sm transition-all duration-200 flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-medium"
+              >
+                <Database className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                Volver a Contabilidad
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Custom animations */}
