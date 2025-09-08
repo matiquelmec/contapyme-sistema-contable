@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, IndicatorsTicker, Badge } from '@/components/ui'
 import { MinimalHeader } from '@/components/layout'
 import Preloader from '@/components/ui/Preloader'
 import { useUserIntention, type UserIntention } from '@/hooks/useUserIntention'
-import { TrendingUp, Shield, Zap, Globe, ChevronRight, Play } from 'lucide-react'
+import { TrendingUp, Shield, Zap, ChevronRight, Play } from 'lucide-react'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
-  const { captureIntention, getIntentionConfig } = useUserIntention()
+  const { captureIntention } = useUserIntention()
 
   const handleIntentionClick = (intention: UserIntention, context?: Record<string, any>) => {
     captureIntention({ intention, context })
