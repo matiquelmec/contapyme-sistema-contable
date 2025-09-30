@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Button } from '@/components/ui';
-import { Header } from '@/components/layout';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Header } from '@/components/layout/Header';
 import { Upload, FileText, Calculator, Download, ArrowRight, AlertCircle, Edit2, Check, X, Save } from 'lucide-react';
 
 interface ExternalBalanceAccount {
