@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui';
 import { Header } from '../../../components/layout';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import DigitalSignatureModal from '@/components/accounting/DigitalSignatureModal';
+import { formatCurrency, formatDate } from '../../../lib/utils';
+import DigitalSignatureModal from '../../../components/accounting/DigitalSignatureModal';
 
 interface BalanceAccount {
   account_code: string;
