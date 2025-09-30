@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Header } from '@/components/layout';
 import JournalEntryEditor from '@/components/accounting/JournalEntryEditor';
 
 interface BankTransaction {

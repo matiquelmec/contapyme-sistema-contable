@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 
 interface PreviredConcept {
   concept_code: string;

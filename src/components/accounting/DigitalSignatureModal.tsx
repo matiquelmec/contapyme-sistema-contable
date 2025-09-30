@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui';
 import { X, FileText, Shield, Download, Eye, QrCode } from 'lucide-react';
 
 interface DigitalSignatureModalProps {

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Header } from '@/components/layout';
 import { AccountSelect } from '@/components/ui/AccountSelect';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
