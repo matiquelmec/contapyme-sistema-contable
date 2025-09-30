@@ -20,7 +20,7 @@ export interface F29Data {
   codigo077: number; // REMANENTE DE CRÉDITO FISC.
   codigo089: number; // IMP. DETERM. IVA
   codigo151: number; // RETENCIÓN
-  codigo556: number; // IVA ANTERIOR DEL PERÍODO
+  codigo556: number; // IVA ANTICIPADO
 
   // Calculados
   totalCreditos: number; // Código 537 - Código 077
@@ -128,7 +128,7 @@ EXTRAE EXACTAMENTE estos valores:
 - Código 077: REMANENTE DE CRÉDITO FISCAL
 - Código 089: IMP. DETERM. IVA
 - Código 151: RETENCIÓN
-- Código 556: IVA ANTERIOR DEL PERÍODO (busca especialmente en sección de débitos/créditos)
+- Código 556: IVA ANTICIPADO (busca especialmente en sección de débitos/créditos)
 
 IMPORTANTE:
 - Extrae SOLO los valores numéricos sin puntos ni comas

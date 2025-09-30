@@ -26,7 +26,7 @@ interface F29Results {
   codigo077: number; // Remanente
   codigo563: number; // Ventas Netas
   codigo151: number; // Honorarios Retenidos
-  codigo556: number; // IVA Anterior del Período
+  codigo556: number; // IVA Anticipado
   totalCreditos: number; // Total Créditos Neto (537-077)
   comprasNetas: number;
   ivaDeterminado: number;
@@ -175,7 +175,7 @@ export default function F29AnalysisPage() {
       ...(result.codigo049 > 0 ? [['Préstamo Solidario', result.codigo049.toString(), '049']] : []),
       ...(result.codigo562 > 0 ? [['Compras Netas Adicionales', result.codigo562.toString(), '562']] : []),
       ...(result.codigo151 > 0 ? [['Honorarios Retenidos', result.codigo151.toString(), '151']] : []),
-      ...(result.codigo556 > 0 ? [['IVA Anterior del Período', result.codigo556.toString(), '556']] : []),
+      ...(result.codigo556 > 0 ? [['IVA Anticipado', result.codigo556.toString(), '556']] : []),
       ['Compras Netas (Calculado)', result.comprasNetas.toString(), 'Calc'],
       ['IVA Determinado', result.ivaDeterminado.toString(), 'Calc'],
       ['Margen Bruto', result.margenBruto.toString(), 'Calc'],
@@ -702,10 +702,10 @@ export default function F29AnalysisPage() {
                   </div>
                 )}
 
-                {/* IVA Anterior del Período - Solo mostrar si existe */}
+                {/* IVA Anticipado - Solo mostrar si existe */}
                 {result.codigo556 > 0 && (
                   <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                    <h4 className="text-sm font-medium text-purple-700 mb-1">IVA Anterior del Período</h4>
+                    <h4 className="text-sm font-medium text-purple-700 mb-1">IVA Anticipado</h4>
                     <p className="text-2xl font-bold text-purple-900">
                       {formatCurrency(result.codigo556)}
                     </p>
@@ -721,8 +721,8 @@ export default function F29AnalysisPage() {
                   </p>
                   <p className="text-xs text-gray-600">
                     {result.ivaDeterminado > 0
-                      ? `IVA + PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}${result.codigo556 > 0 ? ' - IVA Anterior' : ''}`
-                      : `PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}${result.codigo556 > 0 ? ' - IVA Anterior' : ''} (IVA negativo)`}
+                      ? `IVA + PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}${result.codigo556 > 0 ? ' - IVA Anticipado' : ''}`
+                      : `PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}${result.codigo556 > 0 ? ' - IVA Anticipado' : ''} (IVA negativo)`}
                   </p>
                 </div>
               </div>
@@ -961,7 +961,7 @@ export default function F29AnalysisPage() {
                           )}
                           {result.codigo556 > 0 && (
                             <div className="flex justify-between">
-                              <span>IVA anterior período:</span>
+                              <span>IVA anticipado:</span>
                               <span className="font-medium text-purple-600">{formatCurrency(result.codigo556)}</span>
                             </div>
                           )}
@@ -1085,7 +1085,7 @@ export default function F29AnalysisPage() {
                             </div>
                             <div>
                               <p className="text-sm text-gray-700">
-                                <span className="font-semibold text-purple-700">IVA anterior del período:</span> Se aplicó un crédito de {formatCurrency(result.codigo556)} del período anterior.
+                                <span className="font-semibold text-purple-700">IVA anticipado:</span> Se aplicó un crédito de {formatCurrency(result.codigo556)} por pago anticipado de IVA.
                                 Este monto se resta automáticamente del total a pagar.
                               </p>
                             </div>
