@@ -20,7 +20,8 @@ export interface F29Data {
   codigo077: number; // REMANENTE DE CRÉDITO FISC.
   codigo089: number; // IMP. DETERM. IVA
   codigo151: number; // RETENCIÓN
-  
+  codigo556: number; // IVA ANTERIOR DEL PERÍODO
+
   // Calculados
   totalCreditos: number; // Código 537 - Código 077
   comprasNetas: number;
@@ -127,6 +128,7 @@ EXTRAE EXACTAMENTE estos valores:
 - Código 077: REMANENTE DE CRÉDITO FISCAL
 - Código 089: IMP. DETERM. IVA
 - Código 151: RETENCIÓN
+- Código 556: IVA ANTERIOR DEL PERÍODO
 
 IMPORTANTE:
 - Extrae SOLO los valores numéricos sin puntos ni comas
@@ -147,7 +149,8 @@ Responde ÚNICAMENTE con este JSON:
   "codigo062": numero,
   "codigo077": numero,
   "codigo089": numero,
-  "codigo151": numero
+  "codigo151": numero,
+  "codigo556": numero
 }`
             },
             {
@@ -205,6 +208,7 @@ Responde ÚNICAMENTE con este JSON:
       codigo077: parseInt(parsed.codigo077) || 0,
       codigo089: parseInt(parsed.codigo089) || 0,
       codigo151: parseInt(parsed.codigo151) || 0,
+      codigo556: parseInt(parsed.codigo556) || 0,
       totalCreditos: 0,
       comprasNetas: 0,
       ivaDeterminado: 0,
@@ -256,12 +260,17 @@ function calculateFields(result: F29Data) {
   if (result.codigo077 > 0) {
     result.totalAPagar = 0;
   } else {
-    // Si tenemos IVA determinado (089), usar ese + PPM + Préstamo Solidario
+    // Si tenemos IVA determinado (089), usar ese + PPM + Préstamo Solidario - IVA Anterior
     if (result.codigo089 > 0) {
-      result.totalAPagar = result.codigo089 + result.codigo062 + result.codigo049;
+      result.totalAPagar = result.codigo089 + result.codigo062 + result.codigo049 - result.codigo556;
     } else {
-      // Fórmula estándar + Préstamo Solidario
-      result.totalAPagar = Math.abs(result.ivaDeterminado) + result.codigo062 + result.codigo049;
+      // Fórmula estándar + Préstamo Solidario - IVA Anterior
+      result.totalAPagar = Math.abs(result.ivaDeterminado) + result.codigo062 + result.codigo049 - result.codigo556;
+    }
+
+    // Asegurar que el total no sea negativo
+    if (result.totalAPagar < 0) {
+      result.totalAPagar = 0;
     }
   }
   

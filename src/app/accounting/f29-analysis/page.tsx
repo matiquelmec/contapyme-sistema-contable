@@ -26,6 +26,7 @@ interface F29Results {
   codigo077: number; // Remanente
   codigo563: number; // Ventas Netas
   codigo151: number; // Honorarios Retenidos
+  codigo556: number; // IVA Anterior del Período
   totalCreditos: number; // Total Créditos Neto (537-077)
   comprasNetas: number;
   ivaDeterminado: number;
@@ -174,6 +175,7 @@ export default function F29AnalysisPage() {
       ...(result.codigo049 > 0 ? [['Préstamo Solidario', result.codigo049.toString(), '049']] : []),
       ...(result.codigo562 > 0 ? [['Compras Netas Adicionales', result.codigo562.toString(), '562']] : []),
       ...(result.codigo151 > 0 ? [['Honorarios Retenidos', result.codigo151.toString(), '151']] : []),
+      ...(result.codigo556 > 0 ? [['IVA Anterior del Período', result.codigo556.toString(), '556']] : []),
       ['Compras Netas (Calculado)', result.comprasNetas.toString(), 'Calc'],
       ['IVA Determinado', result.ivaDeterminado.toString(), 'Calc'],
       ['Margen Bruto', result.margenBruto.toString(), 'Calc'],
@@ -700,6 +702,17 @@ export default function F29AnalysisPage() {
                   </div>
                 )}
 
+                {/* IVA Anterior del Período - Solo mostrar si existe */}
+                {result.codigo556 > 0 && (
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <h4 className="text-sm font-medium text-purple-700 mb-1">IVA Anterior del Período</h4>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {formatCurrency(result.codigo556)}
+                    </p>
+                    <p className="text-xs text-purple-600">Código 556</p>
+                  </div>
+                )}
+
                 {/* Total a Pagar */}
                 <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-300">
                   <h4 className="text-sm font-medium text-gray-700 mb-1">Total a Pagar</h4>
@@ -707,9 +720,9 @@ export default function F29AnalysisPage() {
                     {formatCurrency(result.totalAPagar)}
                   </p>
                   <p className="text-xs text-gray-600">
-                    {result.ivaDeterminado > 0 
-                      ? `IVA + PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}`
-                      : `PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''} (IVA negativo)`}
+                    {result.ivaDeterminado > 0
+                      ? `IVA + PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}${result.codigo556 > 0 ? ' - IVA Anterior' : ''}`
+                      : `PPM${result.codigo048 > 0 ? ' + Imp. Único' : ''}${result.codigo049 > 0 ? ' + Préstamo Sol.' : ''}${result.codigo151 > 0 ? ' + Honorarios' : ''}${result.codigo556 > 0 ? ' - IVA Anterior' : ''} (IVA negativo)`}
                   </p>
                 </div>
               </div>
@@ -946,6 +959,12 @@ export default function F29AnalysisPage() {
                               <span className="font-medium">{formatCurrency(result.codigo151)}</span>
                             </div>
                           )}
+                          {result.codigo556 > 0 && (
+                            <div className="flex justify-between">
+                              <span>IVA anterior período:</span>
+                              <span className="font-medium text-purple-600">{formatCurrency(result.codigo556)}</span>
+                            </div>
+                          )}
                           {result.codigo048 > 0 && (
                             <div className="flex justify-between">
                               <span>Impuesto único:</span>
@@ -1052,6 +1071,22 @@ export default function F29AnalysisPage() {
                               <p className="text-sm text-gray-700">
                                 <span className="font-semibold text-green-700">Honorarios retenidos:</span> Se detectaron {formatCurrency(result.codigo151)} en retenciones.
                                 Puedes usar este monto como crédito en tu declaración anual.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {result.codigo556 > 0 && (
+                        <div className="bg-white rounded-xl p-4 border border-purple-200 shadow-sm">
+                          <div className="flex items-start space-x-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <CheckCircle className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-700">
+                                <span className="font-semibold text-purple-700">IVA anterior del período:</span> Se aplicó un crédito de {formatCurrency(result.codigo556)} del período anterior.
+                                Este monto se resta automáticamente del total a pagar.
                               </p>
                             </div>
                           </div>
