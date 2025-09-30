@@ -22,7 +22,6 @@ const nextConfig = {
   
   // Optimizaciones experimentales para velocidad
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
     missingSuspenseWithCSRBailout: false,
   },

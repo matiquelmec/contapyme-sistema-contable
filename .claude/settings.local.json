@@ -10,7 +10,9 @@
       "Bash(git rm:*)",
       "Bash(git commit:*)",
       "Bash(git reset:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:vercel.com)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []
