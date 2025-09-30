@@ -99,8 +99,10 @@ export async function GET(request: NextRequest) {
       ];
 
       const csvContent = csvRows.join('\n');
+      // Agregar BOM para UTF-8 para evitar caracteres extraños
+      const bom = '\uFEFF';
 
-      return new NextResponse(csvContent, {
+      return new NextResponse(bom + csvContent, {
         status: 200,
         headers: {
           'Content-Type': 'text/csv; charset=utf-8',

@@ -185,7 +185,9 @@ export default function F29AnalysisPage() {
     ];
 
     const csvContent = csvData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Agregar BOM para UTF-8 para evitar caracteres extraños
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     
     if (link.download !== undefined) {
@@ -1284,7 +1286,9 @@ export default function F29AnalysisPage() {
                     variant="primary" 
                     onClick={() => {
                       const csvContent = generateJournalCSV(journalResult);
-                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                      // Agregar BOM para UTF-8 para evitar caracteres extraños
+                      const bom = '\uFEFF';
+                      const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
                       const link = document.createElement('a');
                       const url = URL.createObjectURL(blob);
                       link.setAttribute('href', url);
@@ -1434,7 +1438,9 @@ export default function F29AnalysisPage() {
                     variant="primary" 
                     onClick={() => {
                       const csvContent = generateJournalCSV(ivaCentralizationResult);
-                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                      // Agregar BOM para UTF-8 para evitar caracteres extraños
+                      const bom = '\uFEFF';
+                      const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
                       const link = document.createElement('a');
                       const url = URL.createObjectURL(blob);
                       link.setAttribute('href', url);

@@ -114,10 +114,12 @@ export async function GET(request: NextRequest) {
       ];
 
       const csvContent = csvRows.join('\n');
+      // Agregar BOM para UTF-8 para evitar caracteres extraños
+      const bom = '\uFEFF';
       const currentDate = new Date();
       const filename = `activos_fijos_${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}.csv`;
 
-      return new NextResponse(csvContent, {
+      return new NextResponse(bom + csvContent, {
         status: 200,
         headers: {
           'Content-Type': 'text/csv; charset=utf-8',
