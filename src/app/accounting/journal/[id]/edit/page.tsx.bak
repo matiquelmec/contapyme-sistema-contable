@@ -1,9 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
-import { AccountSelect } from '@/components/ui';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { AccountSelect } from '@/components/ui/AccountSelect';
+
+interface JournalEntry {
+  id: string;
+  entry_number: number;
+  entry_date: string;
+  description: string;
+  reference?: string;
+  entry_type: string;
+  total_debit: number;
+  total_credit: number;
+  status: string;
+  lines: JournalLine[];
+}
 
 interface JournalLine {
+  id: string;
+  entry_id: string;
   line_number: number;
   account_code: string;
   account_name: string;
@@ -14,38 +30,57 @@ interface JournalLine {
 
 const COMPANY_ID = '8033ee69-b420-4d91-ba0e-482f46cd6fce';
 
-export default function NewJournalEntryPage() {
+export default function EditJournalEntryPage() {
+  const params = useParams();
+  const [originalEntry, setOriginalEntry] = useState<JournalEntry | null>(null);
   const [entry, setEntry] = useState({
-    entry_date: new Date().toISOString().split('T')[0],
+    entry_date: '',
     description: '',
     reference: '',
     entry_type: 'manual'
   });
-
-  const [lines, setLines] = useState<JournalLine[]>([
-    {
-      line_number: 1,
-      account_code: '',
-      account_name: '',
-      description: '',
-      debit_amount: 0,
-      credit_amount: 0
-    },
-    {
-      line_number: 2,
-      account_code: '',
-      account_name: '',
-      description: '',
-      debit_amount: 0,
-      credit_amount: 0
-    }
-  ]);
-
-  const [loading, setLoading] = useState(false);
+  const [lines, setLines] = useState<JournalLine[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (params.id) {
+      loadEntry(params.id as string);
+    }
+  }, [params.id]);
+
+  const loadEntry = async (entryId: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/accounting/journal/${entryId}?include_lines=true`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const entryData = data.data;
+        setOriginalEntry(entryData);
+        setEntry({
+          entry_date: entryData.entry_date.split('T')[0],
+          description: entryData.description,
+          reference: entryData.reference || '',
+          entry_type: entryData.entry_type
+        });
+        setLines(entryData.lines || []);
+      } else {
+        setError(data.error || 'Error loading journal entry');
+      }
+    } catch (err) {
+      setError('Error loading journal entry');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addLine = () => {
     const newLine: JournalLine = {
+      id: `temp-${Date.now()}`,
+      entry_id: params.id as string,
       line_number: lines.length + 1,
       account_code: '',
       account_name: '',
@@ -112,17 +147,16 @@ export default function NewJournalEntryPage() {
     }
 
     try {
-      setLoading(true);
+      setSaving(true);
       setError(null);
 
-      const response = await fetch('/api/accounting/journal', {
-        method: 'POST',
+      const response = await fetch(`/api/accounting/journal/${params.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           company_id: COMPANY_ID,
-          company_demo: true,
           ...entry,
           lines: lines
         }),
@@ -131,29 +165,64 @@ export default function NewJournalEntryPage() {
       const data = await response.json();
 
       if (data.success) {
-        alert('Asiento creado exitosamente');
-        window.location.href = '/accounting/journal';
+        alert('Asiento actualizado exitosamente');
+        window.location.href = `/accounting/journal/${params.id}`;
       } else {
-        setError(data.error || 'Error al crear el asiento');
+        setError(data.error || 'Error al actualizar el asiento');
       }
     } catch (err) {
-      setError('Error al crear el asiento');
+      setError('Error al actualizar el asiento');
       console.error('Error:', err);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="text-center">Cargando asiento contable...</div>
+      </div>
+    );
+  }
+
+  if (error && !originalEntry) {
+    return (
+      <div className="p-6">
+        <div className="text-center text-red-600">
+          Error: {error}
+        </div>
+        <div className="text-center mt-4">
+          <button 
+            onClick={() => window.location.href = '/accounting/journal'}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Volver al Libro Diario
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Nuevo Asiento Contable</h1>
-        <button
-          onClick={() => window.location.href = '/accounting/journal'}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800"
-        >
-          ← Volver
-        </button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Editar Asiento #{originalEntry?.entry_number}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Modificar asiento contable existente
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => window.location.href = `/accounting/journal/${params.id}`}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          >
+            ← Cancelar
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -257,7 +326,7 @@ export default function NewJournalEntryPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {lines.map((line, index) => (
-                    <tr key={index}>
+                    <tr key={line.id || index}>
                       <td className="px-4 py-4">
                         <AccountSelect
                           value={line.account_code}
@@ -338,22 +407,22 @@ export default function NewJournalEntryPage() {
           {/* Botones de acción */}
           <div className="flex justify-end space-x-3">
             <button
-              onClick={() => window.location.href = '/accounting/journal'}
+              onClick={() => window.location.href = `/accounting/journal/${params.id}`}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              disabled={loading}
+              disabled={saving}
             >
               Cancelar
             </button>
             <button
               onClick={saveEntry}
-              disabled={loading || !isBalanced()}
+              disabled={saving || !isBalanced()}
               className={`px-6 py-2 rounded-lg text-white font-medium ${
-                loading || !isBalanced()
+                saving || !isBalanced()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-600'
               }`}
             >
-              {loading ? 'Guardando...' : 'Guardar Asiento'}
+              {saving ? 'Guardando...' : 'Actualizar Asiento'}
             </button>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { AccountSelect } from '@/components/ui/AccountSelect';
+import { AccountSelect } from '@/components/ui';
 
 interface JournalEntry {
   id: string;

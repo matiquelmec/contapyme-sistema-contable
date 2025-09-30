@@ -13,7 +13,10 @@
       "Bash(git checkout:*)",
       "WebFetch(domain:vercel.com)",
       "Bash(vercel:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(xargs sed:*)"
     ],
     "deny": [],
     "ask": []
