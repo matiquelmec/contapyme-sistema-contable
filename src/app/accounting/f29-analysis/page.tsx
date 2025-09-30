@@ -877,7 +877,13 @@ export default function F29AnalysisPage() {
                       </div>
                       <p className="text-sm text-blue-700 font-medium mb-1">Margen Bruto</p>
                       <p className="text-2xl font-bold text-blue-900">
-                        {result.codigo563 > 0 ? `${((result.margenBruto / result.codigo563) * 100).toFixed(2)}%` : 'N/A'}
+                        {result.codigo563 > 0 && result.margenBruto > 0 ? `${((result.margenBruto / result.codigo563) * 100).toFixed(2)}%` : '0.00%'}
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        {result.codigo563 > 0 && result.margenBruto > 0
+                          ? `Utilidad bruta: ${formatCurrency(result.margenBruto)}`
+                          : 'Sin margen positivo en el período'
+                        }
                       </p>
                     </div>
 
@@ -892,7 +898,13 @@ export default function F29AnalysisPage() {
                       </div>
                       <p className="text-sm text-green-700 font-medium mb-1">Efectividad IVA</p>
                       <p className="text-2xl font-bold text-green-900">
-                        {result.codigo563 > 0 ? `${((result.codigo538 / result.codigo563) * 100).toFixed(2)}%` : 'N/A'}
+                        {result.codigo563 > 0 ? `${((result.codigo538 / result.codigo563) * 100).toFixed(2)}%` : '0.00%'}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        {result.codigo563 > 0
+                          ? `Tasa efectiva vs. 19% teórico`
+                          : 'Sin base imponible registrada'
+                        }
                       </p>
                     </div>
 
@@ -901,13 +913,19 @@ export default function F29AnalysisPage() {
                         <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
                           <span className="text-white font-bold text-sm">⚖️</span>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${result.codigo511 > result.codigo538 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                          {result.codigo511 > result.codigo538 ? 'Mayor crédito' : 'Mayor débito'}
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${result.codigo537 > result.codigo538 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                          {result.codigo537 > result.codigo538 ? 'Mayor crédito' : 'Mayor débito'}
                         </span>
                       </div>
                       <p className="text-sm text-purple-700 font-medium mb-1">Ratio Crédito/Débito</p>
                       <p className="text-2xl font-bold text-purple-900">
-                        {result.codigo538 > 0 ? `${(result.codigo511 / result.codigo538).toFixed(2)}` : 'N/A'}
+                        {result.codigo538 > 0 && result.codigo537 > 0 ? `${(result.codigo537 / result.codigo538).toFixed(3)}` : '0.000'}
+                      </p>
+                      <p className="text-xs text-purple-600 mt-1">
+                        {result.codigo538 > 0 && result.codigo537 > 0
+                          ? `Créditos representan ${((result.codigo537 / result.codigo538) * 100).toFixed(1)}% de débitos`
+                          : 'Sin créditos fiscales disponibles'
+                        }
                       </p>
                     </div>
 
@@ -922,7 +940,13 @@ export default function F29AnalysisPage() {
                       </div>
                       <p className="text-sm text-orange-700 font-medium mb-1">Carga Tributaria</p>
                       <p className="text-2xl font-bold text-orange-900">
-                        {result.codigo563 > 0 ? `${((result.totalAPagar / result.codigo563) * 100).toFixed(2)}%` : 'N/A'}
+                        {result.codigo563 > 0 && result.totalAPagar > 0 ? `${((result.totalAPagar / result.codigo563) * 100).toFixed(2)}%` : '0.00%'}
+                      </p>
+                      <p className="text-xs text-orange-600 mt-1">
+                        {result.codigo563 > 0 && result.totalAPagar > 0
+                          ? `Total impuestos: ${formatCurrency(result.totalAPagar)}`
+                          : 'Sin carga tributaria en el período'
+                        }
                       </p>
                     </div>
                   </div>
