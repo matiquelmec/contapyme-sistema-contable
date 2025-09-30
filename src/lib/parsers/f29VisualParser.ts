@@ -128,12 +128,13 @@ EXTRAE EXACTAMENTE estos valores:
 - Código 077: REMANENTE DE CRÉDITO FISCAL
 - Código 089: IMP. DETERM. IVA
 - Código 151: RETENCIÓN
-- Código 556: IVA ANTERIOR DEL PERÍODO
+- Código 556: IVA ANTERIOR DEL PERÍODO (busca especialmente en sección de débitos/créditos)
 
 IMPORTANTE:
 - Extrae SOLO los valores numéricos sin puntos ni comas
 - Si no encuentras un código, usa 0
 - El RUT debe incluir puntos y guión (formato: XX.XXX.XXX-X)
+- REVISA CUIDADOSAMENTE el código 556 ya que a veces aparece en secciones menos visibles
 
 Responde ÚNICAMENTE con este JSON:
 {
@@ -225,6 +226,7 @@ Responde ÚNICAMENTE con este JSON:
       rut: result.rut,
       codigo537: result.codigo537.toLocaleString(),
       codigo538: result.codigo538.toLocaleString(),
+      codigo556: result.codigo556.toLocaleString(), // Agregar debug para 556
       ivaDeterminado: result.ivaDeterminado.toLocaleString(),
       totalAPagar: result.totalAPagar.toLocaleString()
     });
@@ -283,7 +285,19 @@ function calculateFields(result: F29Data) {
     totalCreditos: result.totalCreditos.toLocaleString(),
     comprasNetas: result.comprasNetas.toLocaleString(),
     ivaDeterminado: result.ivaDeterminado.toLocaleString(),
+    codigo556: result.codigo556.toLocaleString(), // Debug específico para 556
     totalAPagar: result.totalAPagar.toLocaleString(),
     margenBruto: result.margenBruto.toLocaleString()
   });
+
+  // Debug específico del cálculo del total a pagar si hay código 556
+  if (result.codigo556 > 0) {
+    console.log('📝 Aplicando código 556 al cálculo:', {
+      ivaOriginal: result.codigo089 > 0 ? result.codigo089 : Math.abs(result.ivaDeterminado),
+      ppm: result.codigo062,
+      prestamoSolidario: result.codigo049,
+      ivaAnterior: result.codigo556,
+      totalFinal: result.totalAPagar
+    });
+  }
 }
