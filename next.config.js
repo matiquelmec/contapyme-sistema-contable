@@ -28,6 +28,15 @@ const nextConfig = {
   
   // Webpack optimizado para velocidad máxima
   webpack: (config, { dev }) => {
+    // Configuración de resolución de módulos más estricta
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+      '@/components': require('path').resolve(__dirname, 'src/components'),
+      '@/lib': require('path').resolve(__dirname, 'src/lib'),
+      '@/types': require('path').resolve(__dirname, 'src/types'),
+    };
+
     if (dev) {
       // Configuración de desarrollo ultra-rápida
       config.cache = {
@@ -36,7 +45,7 @@ const nextConfig = {
           config: [__filename],
         },
       };
-      
+
       // Optimizar para velocidad en desarrollo
       config.optimization = {
         ...config.optimization,
@@ -52,7 +61,7 @@ const nextConfig = {
         },
       };
     }
-    
+
     return config;
   },
   
