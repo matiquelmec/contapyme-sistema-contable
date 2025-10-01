@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth'
 import LoginForm from '@/components/auth/LoginForm'
 import { Suspense } from 'react'
 
+export const dynamic = 'force-dynamic'
+
 interface LoginPageProps {
   searchParams?: {
     message?: string
