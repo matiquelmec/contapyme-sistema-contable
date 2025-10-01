@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic'
+
 // API para obtener información previsional real de un RUT chileno
 export async function GET(request: NextRequest) {
   try {
