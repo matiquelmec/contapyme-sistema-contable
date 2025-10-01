@@ -10,10 +10,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function runMigration() {
   try {
-    console.log('🚀 Iniciando migración multi-tenant...')
+    console.log('🚀 Iniciando migración chart_of_accounts multi-tenant...')
 
     // Leer archivo de migración
-    const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20250930000001_multi_tenant_auth_incremental.sql')
+    const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20251001160000_chart_of_accounts_multi_tenant.sql')
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8')
 
     console.log('📄 Archivo de migración leído:', migrationSQL.length, 'caracteres')
