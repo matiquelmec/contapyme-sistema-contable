@@ -3,6 +3,8 @@ import { BalancePDFGenerator } from '@/lib/services/balancePDFGenerator';
 import { DigitalSignatureService } from '@/lib/services/digitalSignatureService';
 import { createSupabaseServerClient } from '@/lib/database/databaseSimple';
 
+
+export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabaseConnection, isSupabaseConfigured } from '@/lib/database/databaseSimple';
 import { SettlementCalculator, type EmployeeTerminationData } from '@/lib/services/settlementCalculator';
 
+
+export const dynamic = 'force-dynamic'
 // GET - Obtener finiquitos de una empresa
 export async function GET(request: NextRequest) {
   try {

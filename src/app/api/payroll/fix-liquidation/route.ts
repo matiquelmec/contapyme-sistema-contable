@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/database/supabase';
 
+
+export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const { liquidation_id } = await request.json();

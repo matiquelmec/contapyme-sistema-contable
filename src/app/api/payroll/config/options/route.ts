@@ -1,3 +1,5 @@
+
+export const dynamic = 'force-dynamic'
 /**
  * API para obtener opciones dinámicas de AFP e ISAPRE
  * Conecta configuración de empresa con datos de empleados

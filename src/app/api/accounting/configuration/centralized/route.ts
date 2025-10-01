@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { databaseSimple } from '@/lib/database/databaseSimple';
 
+
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/accounting/configuration/centralized
  * Obtiene las configuraciones centralizadas de cuentas por empresa

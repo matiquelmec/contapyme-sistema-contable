@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/database/databaseSimple';
 
+
+export const dynamic = 'force-dynamic'
 const COMPANY_ID = '8033ee69-b420-4d91-ba0e-482f46cd6fce';
 
 export async function GET(

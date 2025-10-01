@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabaseConnection, isSupabaseConfigured } from '@/lib/database/databaseSimple';
 
+
+export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
