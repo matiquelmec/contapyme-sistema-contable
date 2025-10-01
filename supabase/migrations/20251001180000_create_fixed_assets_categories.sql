@@ -50,55 +50,31 @@ ON CONFLICT (name) DO UPDATE SET
   updated_at = NOW();
 
 -- ==========================================
--- 4. AGREGAR FOREIGN KEYS SI CHART_OF_ACCOUNTS EXISTE
+-- 4. NOTA SOBRE FOREIGN KEYS
 -- ==========================================
+
+-- NOTA: No se crean foreign keys a chart_of_accounts.code porque:
+-- 1. En sistema multi-tenant, el código 'code' se repite por empresa
+-- 2. No existe constraint único en 'code' (ni debería haberlo)
+-- 3. La relación correcta sería (company_id, code) pero no es práctica aquí
+-- 4. Se validará por aplicación, no por base de datos
+
+-- Si en el futuro se requiere foreign key, usar esta estructura:
+-- ALTER TABLE chart_of_accounts ADD CONSTRAINT unique_company_code UNIQUE (company_id, code);
+-- ALTER TABLE fixed_assets_categories ADD COLUMN company_id UUID;
+-- ALTER TABLE fixed_assets_categories ADD CONSTRAINT fk_categories_account
+-- FOREIGN KEY (company_id, account_asset_code) REFERENCES chart_of_accounts(company_id, code);
 
 DO $$
 BEGIN
-    -- Verificar si chart_of_accounts existe antes de agregar foreign keys
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'chart_of_accounts') THEN
-
-        -- Solo agregar constraints si no existen
-        IF NOT EXISTS (
-            SELECT 1 FROM information_schema.table_constraints
-            WHERE constraint_name = 'fk_categories_asset_account'
-            AND table_name = 'fixed_assets_categories'
-        ) THEN
-            ALTER TABLE public.fixed_assets_categories
-            ADD CONSTRAINT fk_categories_asset_account
-            FOREIGN KEY (account_asset_code) REFERENCES public.chart_of_accounts(code);
-        END IF;
-
-        IF NOT EXISTS (
-            SELECT 1 FROM information_schema.table_constraints
-            WHERE constraint_name = 'fk_categories_depreciation_account'
-            AND table_name = 'fixed_assets_categories'
-        ) THEN
-            ALTER TABLE public.fixed_assets_categories
-            ADD CONSTRAINT fk_categories_depreciation_account
-            FOREIGN KEY (account_depreciation_code) REFERENCES public.chart_of_accounts(code);
-        END IF;
-
-        IF NOT EXISTS (
-            SELECT 1 FROM information_schema.table_constraints
-            WHERE constraint_name = 'fk_categories_expense_account'
-            AND table_name = 'fixed_assets_categories'
-        ) THEN
-            ALTER TABLE public.fixed_assets_categories
-            ADD CONSTRAINT fk_categories_expense_account
-            FOREIGN KEY (account_expense_code) REFERENCES public.chart_of_accounts(code);
-        END IF;
-
-        RAISE NOTICE '✅ Foreign keys a chart_of_accounts agregadas';
-    ELSE
-        RAISE NOTICE '⚠️ Tabla chart_of_accounts no existe, saltando foreign keys';
-    END IF;
+    RAISE NOTICE '⚠️ Foreign keys a chart_of_accounts omitidas por diseño multi-tenant';
 END $$;
 
 -- ==========================================
 -- 5. TRIGGER PARA UPDATED_AT
 -- ==========================================
 
+-- Verificar si la función ya existe
 CREATE OR REPLACE FUNCTION trigger_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -107,6 +83,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Crear trigger
 DROP TRIGGER IF EXISTS fixed_assets_categories_updated_at ON public.fixed_assets_categories;
 CREATE TRIGGER fixed_assets_categories_updated_at
     BEFORE UPDATE ON public.fixed_assets_categories
