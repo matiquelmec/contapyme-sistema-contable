@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { MinimalHeader } from '@/components/layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
-import { FileText, Upload, AlertCircle, CheckCircle, X, TrendingUp, Download, BarChart3, Eye, BookOpen, Zap, DollarSign, Database, Clock, BadgeCheck, ArrowRight } from 'lucide-react';
+import { FileText, Upload, AlertCircle, CheckCircle, X, TrendingUp, Download, BarChart3, Eye, BookOpen, Zap, DollarSign, Database, Clock, BadgeCheck, ArrowRight, Settings, Wrench } from 'lucide-react';
 
 interface UploadResult {
   file_name: string;
@@ -47,6 +47,9 @@ export default function F29AnalysisPage() {
   const [journalResult, setJournalResult] = useState<any>(null);
   const [generatingIVACentralization, setGeneratingIVACentralization] = useState(false);
   const [ivaCentralizationResult, setIVACentralizationResult] = useState<any>(null);
+  const [checkingAccounts, setCheckingAccounts] = useState(false);
+  const [accountStatus, setAccountStatus] = useState<any>(null);
+  const [creatingAccounts, setCreatingAccounts] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -231,6 +234,65 @@ export default function F29AnalysisPage() {
       .join('\n');
 
     return csvContent;
+  };
+
+  // Función para verificar cuentas F29
+  const checkF29Accounts = async () => {
+    setCheckingAccounts(true);
+    try {
+      console.log('🔍 Verificando cuentas F29...');
+
+      const response = await fetch('/api/accounting/f29-accounts');
+      const data = await response.json();
+
+      if (data.success) {
+        setAccountStatus(data.data.f29_analysis);
+        console.log('📋 Estado de cuentas F29:', data.data.f29_analysis);
+      } else {
+        console.error('❌ Error verificando cuentas:', data.error);
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Error verificando cuentas F29:', err);
+      alert('Error de conexión. Inténtalo nuevamente.');
+    } finally {
+      setCheckingAccounts(false);
+    }
+  };
+
+  // Función para crear cuentas F29 faltantes
+  const createMissingF29Accounts = async () => {
+    setCreatingAccounts(true);
+    try {
+      console.log('🏗️ Creando cuentas F29 faltantes...');
+
+      const response = await fetch('/api/accounting/f29-accounts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          create_missing: true
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('✅ Cuentas creadas:', data.data);
+        alert(`Cuentas creadas exitosamente: ${data.data.created_accounts.length} nuevas cuentas.`);
+        // Verificar nuevamente el estado de las cuentas
+        await checkF29Accounts();
+      } else {
+        console.error('❌ Error creando cuentas:', data.error);
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Error creando cuentas F29:', err);
+      alert('Error de conexión. Inténtalo nuevamente.');
+    } finally {
+      setCreatingAccounts(false);
+    }
   };
 
   // Función para generar asiento contable F29
@@ -831,6 +893,142 @@ export default function F29AnalysisPage() {
                     <span className="text-xs font-bold text-yellow-900">✨</span>
                   </div>
                 </button>
+              </div>
+
+              {/* Configuración de Cuentas F29 */}
+              <div className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Configuración de Cuentas F29</h3>
+                      <p className="text-sm text-gray-600">Verificar y configurar cuentas contables para asientos automáticos</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={checkF29Accounts}
+                    disabled={checkingAccounts}
+                    className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                  >
+                    {checkingAccounts ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Verificando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Database className="w-4 h-4" />
+                        <span>Verificar Cuentas</span>
+                      </>
+                    )}
+                  </button>
+
+                  {accountStatus && !accountStatus.ready_for_f29 && (
+                    <button
+                      onClick={createMissingF29Accounts}
+                      disabled={creatingAccounts}
+                      className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                    >
+                      {creatingAccounts ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Creando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wrench className="w-4 h-4" />
+                          <span>Crear Cuentas Faltantes</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {/* Estado de Cuentas */}
+                {accountStatus && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <span className="text-sm font-medium text-gray-700">Estado General:</span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        accountStatus.ready_for_f29
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {accountStatus.ready_for_f29 ? 'Configurado' : 'Configuración Incompleta'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className={`p-3 rounded-lg border ${
+                        accountStatus.accounts.caja.found ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Caja</span>
+                          {accountStatus.accounts.caja.found ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <X className="w-4 h-4 text-red-500" />
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {accountStatus.accounts.caja.found
+                            ? `${accountStatus.accounts.caja.matches[0]?.code} - ${accountStatus.accounts.caja.matches[0]?.name}`
+                            : 'Falta: 1.1.1.001 - Caja'
+                          }
+                        </p>
+                      </div>
+
+                      <div className={`p-3 rounded-lg border ${
+                        accountStatus.accounts.iva_debito.found ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">IVA Débito</span>
+                          {accountStatus.accounts.iva_debito.found ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <X className="w-4 h-4 text-red-500" />
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {accountStatus.accounts.iva_debito.found
+                            ? `${accountStatus.accounts.iva_debito.matches[0]?.code} - ${accountStatus.accounts.iva_debito.matches[0]?.name}`
+                            : 'Falta: 2.1.3.002 - IVA Débito Fiscal'
+                          }
+                        </p>
+                      </div>
+
+                      <div className={`p-3 rounded-lg border ${
+                        accountStatus.accounts.ventas.found ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Ventas</span>
+                          {accountStatus.accounts.ventas.found ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <X className="w-4 h-4 text-red-500" />
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {accountStatus.accounts.ventas.found
+                            ? `${accountStatus.accounts.ventas.matches[0]?.code} - ${accountStatus.accounts.ventas.matches[0]?.name}`
+                            : 'Falta: 5.1.1.001 - Ventas del Giro'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

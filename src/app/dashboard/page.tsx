@@ -1,255 +1,188 @@
-'use client';
+import { redirect } from 'next/navigation'
+import { getUser, getUserProfile } from '@/lib/auth'
+import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import CompanySelector from '@/components/dashboard/CompanySelector'
+import UserStats from '@/components/dashboard/UserStats'
+import SubscriptionStatus from '@/components/dashboard/SubscriptionStatus'
+import QuickActions from '@/components/dashboard/QuickActions'
+import RecentActivity from '@/components/dashboard/RecentActivity'
 
-import Link from 'next/link';
-import { CompanyProvider } from '@/contexts/CompanyContext';
-import { CompanyHeader } from '@/components/company';
-import { MinimalHeader } from '@/components/layout';
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
+export default async function DashboardPage() {
+  // Verificar autenticación
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
 
-export default function DashboardPage() {
+  // Obtener perfil completo del usuario
+  const profile = await getUserProfile(user.id)
+  if (!profile) {
+    redirect('/login')
+  }
+
+  // Si no tiene empresas, redirigir a crear empresa
+  if (!profile.companies || profile.companies.length === 0) {
+    redirect('/companies/create')
+  }
+
   return (
-    <CompanyProvider demoMode={true}>
-      <div className="min-h-screen bg-gray-50">
-        <MinimalHeader variant="premium" />
+    <DashboardLayout user={profile}>
+      <div className="space-y-6">
+        {/* Header del Dashboard */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                ¡Bienvenido, {profile.full_name}!
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Gestiona tus empresas y accede a todas las funcionalidades de ContaPyme
+              </p>
+            </div>
+            <CompanySelector
+              companies={profile.companies}
+              currentUserId={user.id}
+            />
+          </div>
+        </div>
 
-        <main className="max-w-7xl mx-auto py-8 px-4">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg shadow-lg">
-              <div className="px-6 py-8 text-white">
-                <h1 className="text-3xl font-bold mb-2">Dashboard Empresarial</h1>
-                <p className="text-indigo-100">Centro de comando de tu empresa</p>
-              </div>
+        {/* Estadísticas del Usuario */}
+        <UserStats
+          profile={profile}
+          companies={profile.companies}
+        />
+
+        {/* Estado de Suscripción */}
+        <SubscriptionStatus
+          subscription={profile.subscription}
+          subscriptionPlan={profile.subscription_plan}
+          subscriptionStatus={profile.subscription_status}
+          maxCompanies={profile.max_companies}
+          currentCompanies={profile.companies.length}
+        />
+
+        {/* Grid de Contenido Principal */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Acciones Rápidas */}
+          <QuickActions
+            companies={profile.companies}
+            canCreateCompany={profile.companies.length < profile.max_companies}
+            subscriptionPlan={profile.subscription_plan}
+          />
+
+          {/* Actividad Reciente */}
+          <RecentActivity userId={user.id} />
+        </div>
+
+        {/* Empresas Gestionadas */}
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Empresas Gestionadas
+              </h2>
+              <span className="text-sm text-gray-500">
+                {profile.companies.length} de {profile.max_companies} permitidas
+              </span>
             </div>
           </div>
-          {/* Company Information */}
-          <div className="mb-8">
-            <CompanyHeader showFullInfo={false} />
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">F29 Analizados</p>
-                    <p className="text-2xl font-bold text-blue-600">12</p>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {profile.companies.map((company) => (
+                <div
+                  key={company.company_id}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {company.company_name}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        RUT: {company.company_rut}
+                      </p>
+                      <div className="mt-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          company.user_role === 'owner'
+                            ? 'bg-blue-100 text-blue-800'
+                            : company.user_role === 'admin'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {company.user_role === 'owner' ? 'Propietario' :
+                           company.user_role === 'admin' ? 'Administrador' :
+                           company.user_role === 'accountant' ? 'Contador' : 'Visualizador'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <div className="mt-3 flex items-center justify-between">
+                    <button
+                      onClick={() => window.location.href = `/companies/${company.company_id}`}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Administrar →
+                    </button>
+                    <button
+                      onClick={() => window.location.href = `/explore?company=${company.company_id}`}
+                      className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Acceder
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Botón para crear nueva empresa */}
+              {profile.companies.length < profile.max_companies && (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center hover:border-gray-400 transition-colors cursor-pointer">
+                  <div className="text-gray-400 mb-2">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </div>
+                  <h3 className="text-sm font-medium text-gray-900 mb-1">
+                    Crear Nueva Empresa
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Agrega otra empresa a tu cuenta
+                  </p>
+                  <button
+                    onClick={() => window.location.href = '/companies/create'}
+                    className="text-xs bg-gray-600 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
+                  >
+                    Crear Empresa
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Empleados</p>
-                    <p className="text-2xl font-bold text-green-600">8</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            {/* Límite alcanzado */}
+            {profile.companies.length >= profile.max_companies && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center">
+                  <div className="text-yellow-400 mr-3">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Activos Fijos</p>
-                    <p className="text-2xl font-bold text-purple-600">24</p>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Estado Sistema</p>
-                    <p className="text-2xl font-bold text-green-600">100%</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Modules */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Contabilidad Module */}
-            <Card className="border-blue-200">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">Módulo de Contabilidad</CardTitle>
-                    <CardDescription className="text-base">
-                      Gestión fiscal completa con análisis F29 automático
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link href="/accounting/f29-analysis">
-                      <Button variant="primary" className="w-full justify-start">
-                        <span className="mr-2">📄</span>
-                        Análisis F29
-                      </Button>
-                    </Link>
-                    <Link href="/accounting/f29-comparative">
-                      <Button variant="success" className="w-full justify-start">
-                        <span className="mr-2">📊</span>
-                        Comparativo
-                      </Button>
-                    </Link>
-                    <Link href="/accounting/indicators">
-                      <Button variant="outline" className="w-full justify-start">
-                        <span className="mr-2">💰</span>
-                        Indicadores
-                      </Button>
-                    </Link>
-                    <Link href="/accounting/fixed-assets">
-                      <Button variant="outline" className="w-full justify-start">
-                        <span className="mr-2">🏢</span>
-                        Activos Fijos
-                      </Button>
-                    </Link>
-                  </div>
-                  <Link href="/accounting">
-                    <Button variant="outline" className="w-full">
-                      Ver Módulo Completo →
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Remuneraciones Module */}
-            <Card className="border-green-200">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">Módulo de Remuneraciones</CardTitle>
-                    <CardDescription className="text-base">
-                      Gestión completa de nómina y recursos humanos
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link href="/payroll/employees">
-                      <Button variant="primary" className="w-full justify-start">
-                        <span className="mr-2">👥</span>
-                        Empleados
-                      </Button>
-                    </Link>
-                    <Link href="/payroll/calculations">
-                      <Button variant="outline" className="w-full justify-start">
-                        <span className="mr-2">🧮</span>
-                        Cálculos
-                      </Button>
-                    </Link>
-                    <Link href="/payroll/reports">
-                      <Button variant="outline" className="w-full justify-start">
-                        <span className="mr-2">📋</span>
-                        Reportes
-                      </Button>
-                    </Link>
-                    <Link href="/payroll/settings">
-                      <Button variant="outline" className="w-full justify-start">
-                        <span className="mr-2">⚙️</span>
-                        Settings
-                      </Button>
-                    </Link>
-                  </div>
-                  <Link href="/payroll">
-                    <Button variant="outline" className="w-full">
-                      Ver Módulo Completo →
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actividad Reciente</CardTitle>
-              <CardDescription>
-                Últimas acciones realizadas en tu cuenta
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">F29</span>
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">Análisis F29 procesado</p>
-                    <p className="text-sm text-gray-600">Formulario período 202407 analizado exitosamente</p>
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Límite de empresas alcanzado
+                    </h3>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Has alcanzado el límite de {profile.max_companies} empresas para tu plan {profile.subscription_plan}.
+                      <a href="/settings/billing" className="font-medium underline ml-1">
+                        Actualiza tu plan
+                      </a> para crear más empresas.
+                    </p>
                   </div>
-                  <span className="text-sm text-gray-500">Hace 2 horas</span>
-                </div>
-
-                <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-lg">
-                  <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">💰</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">Indicadores actualizados</p>
-                    <p className="text-sm text-gray-600">UF, UTM y divisas sincronizadas automáticamente</p>
-                  </div>
-                  <span className="text-sm text-gray-500">Hace 1 día</span>
-                </div>
-
-                <div className="flex items-center space-x-4 p-4 bg-purple-50 rounded-lg">
-                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">🏢</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">Activo fijo agregado</p>
-                    <p className="text-sm text-gray-600">Computador Dell OptiPlex registrado en inventario</p>
-                  </div>
-                  <span className="text-sm text-gray-500">Hace 3 días</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </main>
+            )}
+          </div>
+        </div>
       </div>
-    </CompanyProvider>
-  );
+    </DashboardLayout>
+  )
 }

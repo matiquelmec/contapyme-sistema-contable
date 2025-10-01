@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseClient } from '@/lib/auth-client'
+import { authSimple } from '@/lib/auth-simple'
+import { AuthRedirect } from '@/lib/auth-redirect'
 
 export default function RegisterForm() {
   const [email, setEmail] = useState('')
@@ -13,7 +14,6 @@ export default function RegisterForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const router = useRouter()
-  const supabase = supabaseClient
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,80 +21,58 @@ export default function RegisterForm() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          }
-        }
+      // Usar API route para evitar problemas de CORS/proxy
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          selectedPlan
+        })
       })
 
-      if (error) {
-        setError(error.message)
-      } else if (data.user) {
-        // Determinar límites por plan y período de prueba
-        const planLimits = {
-          monthly: { companies: 1, employees: 10, trialDays: 7 },
-          semestral: { companies: 5, employees: 50, trialDays: 7 },
-          annual: { companies: 10, employees: 100, trialDays: 7 }
-        }
-        const limits = planLimits[selectedPlan]
+      const result = await response.json()
 
-        // Para el plan básico (monthly), ofrecer 7 días gratis
-        const trialEndDate = new Date(Date.now() + limits.trialDays * 24 * 60 * 60 * 1000).toISOString()
+      if (!response.ok) {
+        setError(result.error || 'Error en el registro')
+      } else {
+        // Registro exitoso, ahora hacer login automático
+        setSuccess(true)
 
-        // Insert user profile into our users_new table
-        const { error: profileError } = await supabase
-          .from('users_new')
-          .insert([
-            {
-              id: data.user.id,
-              email: data.user.email!,
-              full_name: name,
-              subscription_plan: selectedPlan,
-              subscription_status: 'trial',
-              max_companies: limits.companies,
-              email_verified: false,
-              trial_ends_at: trialEndDate
-            }
-          ])
+        try {
+          // Hacer login automático usando sistema interno
+          const { user, error: loginError } = await authSimple.login(email, password)
 
-        if (profileError) {
-          console.error('Error creating profile:', profileError)
-          setError('Error al crear el perfil de usuario')
-        } else {
-          // Crear suscripción inicial con 7 días de prueba gratis
-          const { error: subscriptionError } = await supabase
-            .from('subscriptions')
-            .insert([
-              {
-                user_id: data.user.id,
-                plan_type: selectedPlan,
-                status: 'trial',
-                current_period_end: trialEndDate,
-                trial_end: trialEndDate,
-                company_limit: limits.companies,
-                employee_limit: limits.employees,
-                amount_cents: 0, // Trial gratuito por 7 días
-                currency: 'CLP'
-              }
-            ])
+          if (loginError || !user) {
+            console.error('Error en login automático:', loginError)
+            // Falló el login automático, redirigir a login manual
+            setTimeout(() => {
+              router.push('/login?message=Cuenta creada exitosamente. Por favor inicia sesión.')
+            }, 2000)
+          } else {
+            // Login automático exitoso
+            console.log('✅ Login automático exitoso:', user.email)
 
-          if (subscriptionError) {
-            console.error('Error creating subscription:', subscriptionError)
-            // No fallar el registro por esto, se puede crear después
+            // Usar sistema robusto de redirección
+            AuthRedirect.redirectWithConfirmation(
+              '/',
+              '¡Cuenta creada! Accediendo al sistema...'
+            )
           }
-
-          setSuccess(true)
+        } catch (loginErr) {
+          console.error('Error en login automático:', loginErr)
           setTimeout(() => {
-            router.push('/dashboard')
+            router.push('/login?message=Cuenta creada exitosamente. Por favor inicia sesión.')
           }, 2000)
         }
       }
     } catch (err) {
-      setError('Error inesperado. Intenta nuevamente.')
+      console.error('Error en registro:', err)
+      setError('Error de conexión. Verifica tu internet e intenta nuevamente.')
     } finally {
       setLoading(false)
     }
@@ -120,7 +98,7 @@ export default function RegisterForm() {
               }
             </p>
             <p className="mt-1 text-center text-xs text-gray-500">
-              Revisa tu correo para confirmar tu cuenta. Serás redirigido al login...
+              Iniciando sesión automáticamente y redirigiendo al dashboard...
             </p>
           </div>
         </div>

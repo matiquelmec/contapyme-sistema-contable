@@ -2,15 +2,19 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/auth'
+import { authSimple } from '@/lib/auth-simple'
+import { AuthRedirect } from '@/lib/auth-redirect'
 
-export default function LoginForm() {
+interface LoginFormProps {
+  message?: string
+}
+
+export default function LoginForm({ message }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,19 +22,39 @@ export default function LoginForm() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      console.log('🔐 Iniciando login...')
 
-      if (error) {
-        setError(error.message)
+      const { user, error } = await authSimple.login(email, password)
+
+      console.log('📋 Resultado del login:', { user, error })
+
+      if (error || !user) {
+        console.log('❌ Error en login:', error)
+        setError(error || 'Error de autenticación')
       } else {
-        router.push('/explore')
-        router.refresh()
+        console.log('✅ Login exitoso:', user.email)
+
+        // Verificar si hay una URL de redirección
+        const urlParams = new URLSearchParams(window.location.search)
+        const redirectTo = urlParams.get('redirect') || '/'
+
+        console.log('🔄 Redirigiendo a:', redirectTo)
+
+        // Usar sistema robusto de redirección
+        try {
+          await AuthRedirect.redirectWithConfirmation(
+            redirectTo,
+            '¡Login exitoso! Redirigiendo...'
+          )
+        } catch (redirectError) {
+          console.error('Error en redirección:', redirectError)
+          // Fallback: redirección forzada
+          AuthRedirect.forceRedirect(redirectTo)
+        }
       }
     } catch (err) {
-      setError('Error inesperado. Intenta nuevamente.')
+      console.error('💥 Error general en login:', err)
+      setError('Error de conexión. Intenta nuevamente.')
     } finally {
       setLoading(false)
     }
@@ -48,6 +72,12 @@ export default function LoginForm() {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          {message && (
+            <div className="text-green-600 text-sm text-center bg-green-50 p-3 rounded-md mb-4">
+              {message}
+            </div>
+          )}
+
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">

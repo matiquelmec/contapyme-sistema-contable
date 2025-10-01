@@ -16,7 +16,20 @@
       "Bash(find:*)",
       "Bash(npm install)",
       "Bash(npm run build:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Read(//c/Users/Matías Riquelme/Desktop/Todo Septiembre 2025/Proyectos/Contapymepuq/**)",
+      "Bash(curl:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node:*)",
+      "Bash(python:*)",
+      "Bash(start http://localhost:3002/register)",
+      "Bash(start http://localhost:3002/accounting/f29-analysis)",
+      "Bash(start http://localhost:3002/)",
+      "Bash(cat:*)",
+      "Bash(nslookup:*)",
+      "Bash(start http://localhost:3000/register)",
+      "Bash(start http://localhost:3000/)",
+      "Bash(start http://localhost:3000/login)"
     ],
     "deny": [],
     "ask": []

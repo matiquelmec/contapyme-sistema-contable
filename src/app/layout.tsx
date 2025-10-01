@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { CompanyProvider } from '@/contexts/CompanyContext'
+import { RedirectHandler } from '@/components/auth/RedirectHandler'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
+        <RedirectHandler />
         <CompanyProvider>
           {children}
         </CompanyProvider>

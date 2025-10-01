@@ -16,6 +16,11 @@ const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
 // Exportar la instancia única para ser usada en toda la aplicación
 export const supabaseClient = supabase;
 
+// Función createClient para compatibilidad con LoginForm
+export const createClient = () => {
+  return supabaseClient;
+};
+
 // Hook personalizado para usar en componentes React
 export const useAuth = () => {
   if (typeof window === 'undefined') {
